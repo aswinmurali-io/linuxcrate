@@ -1,2 +1,3 @@
 # linuxcrate
- A powerful utility app for linux
+
+A powerful utility app for linux.
