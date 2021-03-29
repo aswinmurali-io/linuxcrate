@@ -7,6 +7,8 @@ class Dashboard extends StatefulWidget {
   _DashboardState createState() => _DashboardState();
 }
 
+EnvironmentDetailsLayout contentLayout = EnvironmentDetailsLayout();
+
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0;
   final _scaffoldkey = GlobalKey<ScaffoldState>();
@@ -88,7 +90,9 @@ class _DashboardState extends State<Dashboard> {
               flex: 1,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
-                child: EnvironmentList(),
+                child: EnvironmentNavBar(
+                  setStateDashboard: setState,
+                ),
               ),
             ),
             Flexible(
@@ -99,7 +103,7 @@ class _DashboardState extends State<Dashboard> {
                 )),
             Flexible(
               flex: 3,
-              child: Text("Hi"),
+              child: contentLayout,
             ),
           ],
         ),
