@@ -11,9 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: 1.0.0
+  google_fonts: ^1.0.0
   popup_box: ^0.1.0
-  flutter_feather_icons: 1.0.3
+  flutter_feather_icons: ^1.0.3
+  shared_preferences: ^2.0.5
 
 dev_dependencies:
   flutter_test:

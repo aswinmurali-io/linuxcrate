@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
-import 'package:linuxcrate/routes/enviroment.dart';
+import 'package:linuxcrate/routes/environment/common.dart';
+import 'package:linuxcrate/routes/environment/navbar.dart';
 
 class Dashboard extends StatefulWidget {
   @override
   _DashboardState createState() => _DashboardState();
 }
-
-EnvironmentDetailsLayout contentLayout = EnvironmentDetailsLayout();
 
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0;
