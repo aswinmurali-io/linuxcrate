@@ -1,3 +1,4 @@
+import os
 import sys
 
 from urllib.request import urlopen
@@ -31,6 +32,9 @@ class PyPIWeb(object):
 
     def install(self, packagename: str) -> bool:
         return False
+
+    def freeze() -> str:
+        return os.system('pip freeze')
 
 
 pypi = PyPIWeb()

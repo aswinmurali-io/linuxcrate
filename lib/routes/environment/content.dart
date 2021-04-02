@@ -26,7 +26,6 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
 
   List<List<String>> deps = [
     ['Module name', 'Version', 'Description'],
-    ['pip', '2.1', 'pip is pip!'],
   ];
 
   Widget detailsTemplate(String name, TextEditingController controller) => Row(
@@ -56,6 +55,17 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
   List<List<String>> _searchDepsList = [];
   Timer _debounce;
 
+  void initAsync() async {
+    deps = await getLocalDeps('');
+    setState(() => deps);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initAsync();
+  }
+
   Future<List<List<String>>> searchDeps(String searchKeyword) async {
     List<List<String>> _tmpList = [];
     _tmpList.add(['Module name', 'Version', 'Description']);
@@ -64,6 +74,25 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
       stdout.write(result.stdout);
       List<String> _tmp = result.stdout.split('\n');
       for (String line in _tmp) _tmpList.add(line.split('\t'));
+      stderr.write(result.stderr);
+    });
+    print(_tmpList);
+    return _tmpList;
+  }
+
+  Future<List<List<String>>> getLocalDeps(String envName) async {
+    List<List<String>> _tmpList = [];
+    _tmpList.add(['Module name', 'Version', 'Description']);
+    await Process.run('python', ['-m', 'pip', 'freeze']).then((result) {
+      stdout.write(result.stdout);
+      List<String> _tmp = result.stdout.split('\n');
+
+      for (String line in _tmp) {
+        List<String> _o = line.split('==');
+        _o.add('');
+        _tmpList.add(_o);
+      }
+
       stderr.write(result.stderr);
     });
     print(_tmpList);
@@ -94,11 +123,6 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
                       decoration: InputDecoration(
                         hintText: 'Search packages',
                         border: OutlineInputBorder(),
-                        suffix: ElevatedButton.icon(
-                          icon: Icon(Icons.search),
-                          label: Text('Search'),
-                          onPressed: () {},
-                        ),
                       ),
                     ),
                     Scrollbar(
@@ -184,7 +208,11 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
-              child: depsListGenerator(deps),
+              child: Scrollbar(
+                child: SingleChildScrollView(
+                  child: depsListGenerator(deps),
+                ),
+              ),
             ),
           ),
         ],
