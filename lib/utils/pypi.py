@@ -1,3 +1,5 @@
+import sys
+
 from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
@@ -12,7 +14,6 @@ class PyPIWeb(object):
 
     def search(self, keyword: str) -> list:
         _url = f'{self.URL}/?q={keyword}'
-        print(_url)
         page = urlopen(_url)
         html_bytes = page.read()
         raw_html = html_bytes.decode('utf-8')
@@ -33,7 +34,7 @@ class PyPIWeb(object):
 
 
 pypi = PyPIWeb()
-info = pypi.search('pip')
+info = pypi.search(sys.argv[1])
 
 i = 0
 while i < len(info):

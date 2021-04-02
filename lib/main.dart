@@ -3,9 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'routes/dashboard.dart';
 
-void main() {
-  runApp(LinuxCrate());
-}
+void main() => runApp(LinuxCrate());
 
 class LinuxCrate extends StatelessWidget {
   @override
