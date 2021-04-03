@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:linuxcrate/routes/environment/common.dart';
 import 'package:linuxcrate/routes/environment/content.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+List<EnvironmentListTile> _environmentList = [];
 
 // Environment list tile UI for navbar
 class EnvironmentListTile extends StatefulWidget {
@@ -51,81 +54,118 @@ class _EnvironmentListTileState extends State<EnvironmentListTile> {
         );
       },
       child: Container(
-        color: _selected ? Colors.grey.withOpacity(0.1) : null,
-        child: Row(
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+          color: _selected ? Colors.grey.withOpacity(0.1) : null,
+          child: Column(
+            children: [
+              Row(
                 children: [
-                  FittedBox(
-                    fit: BoxFit.fitWidth,
-                    child: Text(
-                      widget?.title ?? 'Untitled',
-                      style: TextStyle(
-                          color: Colors.grey.withOpacity(_selected ? 1 : 0.5),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15),
-                    ),
-                  ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                    child: FittedBox(
-                      fit: BoxFit.fitWidth,
-                      child: Text(
-                        widget?.desp ?? 'No Description',
-                        style: GoogleFonts.ubuntu(
-                          textStyle: TextStyle(
-                            fontWeight: FontWeight.w100,
-                            fontSize: 13,
-                            color: Colors.grey[500],
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 30),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: Text(
+                            widget?.title ?? 'Untitled',
+                            style: TextStyle(
+                                color: Colors.grey
+                                    .withOpacity(_selected ? 1 : 0.5),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                    child: FittedBox(
-                      fit: BoxFit.fitWidth,
-                      child: Text(
-                        widget?.environment.toString() ?? 'Unknown environment',
-                        style: GoogleFonts.ubuntu(
-                          textStyle: TextStyle(
-                            fontWeight: FontWeight.w100,
-                            fontSize: 13,
-                            color: Colors.grey[500],
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                          child: FittedBox(
+                            fit: BoxFit.fitWidth,
+                            child: Text(
+                              widget?.desp ?? 'No Description',
+                              style: GoogleFonts.ubuntu(
+                                textStyle: TextStyle(
+                                  fontWeight: FontWeight.w100,
+                                  fontSize: 13,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                          child: FittedBox(
+                            fit: BoxFit.fitWidth,
+                            child: Text(
+                              widget?.environment.toString() ??
+                                  'Unknown environment',
+                              style: GoogleFonts.ubuntu(
+                                textStyle: TextStyle(
+                                  fontWeight: FontWeight.w100,
+                                  fontSize: 13,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  Spacer(),
+                  if (_selected)
+                    Flexible(
+                        flex: 0,
+                        child: Container(
+                          width: 3,
+                          color: Color(0xff5d71e1),
+                        ))
                 ],
               ),
-            ),
-            Spacer(),
-            if (_selected)
-              Flexible(
-                  flex: 0,
-                  child: Container(
-                    width: 3,
-                    color: Color(0xff5d71e1),
-                  ))
-          ],
-        ),
-      ),
+              IconButton(
+                onPressed: () async {
+                  final preferences = await SharedPreferences.getInstance();
+                  preferences.remove(widget.title);
+                  _environmentList.removeWhere((env) => env.title == widget.title);
+                  widget.setStateDashboard(() => _environmentList);
+                },
+                icon: Icon(Icons.delete),
+              ),
+            ],
+          )),
     );
   }
 }
 
 class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
-  List<Widget> _environmentList = [];
-
   String _title;
   String _description;
+
+  Future<void> initAsync() async {
+    final preferences = await SharedPreferences.getInstance();
+    Set<String> keys = preferences.getKeys();
+    keys.forEach((key) {
+      List<String> content = preferences.getStringList(key);
+      setState(() {
+        _environmentList.add(EnvironmentListTile(
+          title: key,
+          desp: content[0],
+          // TODO: provide a custom toString() and toEnvironment() implementation.
+          environment: content[1] == 'Environments.python'
+              ? Environments.python
+              : Environments.dart,
+          setStateDashboard: widget.setStateDashboard,
+        ));
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    initAsync();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +194,7 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
                 child: SizedBox(
                   height: 40,
                   child: PopupMenuButton<Environments>(
-                    onSelected: (Environments selectedEnvironment) {
+                    onSelected: (Environments selectedEnvironment) async {
                       setState(() {
                         _environmentList.add(EnvironmentListTile(
                           title: _title,
@@ -163,6 +203,11 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
                           setStateDashboard: widget.setStateDashboard,
                         ));
                       });
+                      final preferences = await SharedPreferences.getInstance();
+                      preferences.setStringList(_title, [
+                        _description,
+                        selectedEnvironment.toString(),
+                      ]);
                     },
                     itemBuilder: (BuildContext context) {
                       _title = null;

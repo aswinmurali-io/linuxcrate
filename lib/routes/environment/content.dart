@@ -28,76 +28,11 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     ['Module name', 'Version', 'Description'],
   ];
 
-  Widget detailsTemplate(String name, TextEditingController controller) => Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Text(name),
-          ),
-          Expanded(
-            flex: 5,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-              child: TextField(
-                controller: controller,
-              ),
-            ),
-          ),
-        ],
-      );
-
-  bool isVersion(String input) =>
-      RegExp('^([1-9]\\d*)\\.(\\d+)\\.(\\d+)(?:-[br]{1}[0-9]?\\d*)?\$')
-          .hasMatch(input);
-
-  String get utilsPath => 'lib/utils/pypi.py';
-
   List<List<String>> _searchDepsList = [];
+
   Timer _debounce;
 
-  void initAsync() async {
-    deps = await getLocalDeps('');
-    setState(() => deps);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    initAsync();
-  }
-
-  Future<List<List<String>>> searchDeps(String searchKeyword) async {
-    List<List<String>> _tmpList = [];
-    _tmpList.add(['Module name', 'Version', 'Description']);
-    await Process.run('python', ['-W', 'ignore', utilsPath, searchKeyword])
-        .then((result) {
-      stdout.write(result.stdout);
-      List<String> _tmp = result.stdout.split('\n');
-      for (String line in _tmp) _tmpList.add(line.split('\t'));
-      stderr.write(result.stderr);
-    });
-    print(_tmpList);
-    return _tmpList;
-  }
-
-  Future<List<List<String>>> getLocalDeps(String envName) async {
-    List<List<String>> _tmpList = [];
-    _tmpList.add(['Module name', 'Version', 'Description']);
-    await Process.run('python', ['-m', 'pip', 'freeze']).then((result) {
-      stdout.write(result.stdout);
-      List<String> _tmp = result.stdout.split('\n');
-
-      for (String line in _tmp) {
-        List<String> _o = line.split('==');
-        _o.add('');
-        _tmpList.add(_o);
-      }
-
-      stderr.write(result.stderr);
-    });
-    print(_tmpList);
-    return _tmpList;
-  }
+  String get utilsPath => 'lib/utils/pypi.py';
 
   Future<dynamic> addDepsDialog() => showDialog(
         context: context,
@@ -152,6 +87,39 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
           });
         },
       );
+  @override
+  Widget build(BuildContext context) {
+    titleTextFieldController.text = widget?.title ?? '';
+    despTextFieldController.text = widget?.desp ?? '';
+    envTextFieldController.text = widget?.environment?.toString() ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          detailsTemplate("Name", titleTextFieldController),
+          detailsTemplate("Description", despTextFieldController),
+          detailsTemplate("Environment", envTextFieldController),
+          ElevatedButton.icon(
+            onPressed: addDepsDialog,
+            icon: Icon(Icons.add),
+            label: Text('Add'),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
+              child: Scrollbar(
+                child: SingleChildScrollView(
+                  child: depsListGenerator(deps),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget depsListGenerator(List deps) => ListView.builder(
         shrinkWrap: true,
@@ -186,37 +154,68 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
         ),
       );
 
-  @override
-  Widget build(BuildContext context) {
-    titleTextFieldController.text = widget?.title ?? '';
-    despTextFieldController.text = widget?.desp ?? '';
-    envTextFieldController.text = widget?.environment?.toString() ?? '';
-
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  // The environment details UI. Things like name, description, etc, _________
+  Widget detailsTemplate(String name, TextEditingController controller) => Row(
         children: [
-          detailsTemplate("Name", titleTextFieldController),
-          detailsTemplate("Description", despTextFieldController),
-          detailsTemplate("Environment", envTextFieldController),
-          ElevatedButton.icon(
-            onPressed: addDepsDialog,
-            icon: Icon(Icons.add),
-            label: Text('Add'),
+          Expanded(
+            flex: 1,
+            child: Text(name),
           ),
           Expanded(
+            flex: 5,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
-              child: Scrollbar(
-                child: SingleChildScrollView(
-                  child: depsListGenerator(deps),
-                ),
+              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+              child: TextField(
+                controller: controller,
               ),
             ),
           ),
         ],
-      ),
-    );
+      );
+
+  Future<List<List<String>>> getLocalDeps(String envName) async {
+    List<List<String>> _tmpList = [];
+    _tmpList.add(['Module name', 'Version', 'Description']);
+    await Process.run('python', ['-m', 'pip', 'freeze']).then((result) {
+      stdout.write(result.stdout);
+      List<String> _tmp = result.stdout.split('\n');
+
+      for (String line in _tmp) {
+        List<String> _o = line.split('==');
+        _o.add('');
+        _tmpList.add(_o);
+      }
+
+      stderr.write(result.stderr);
+    });
+    return _tmpList;
+  }
+
+  void initAsync() async {
+    deps = await getLocalDeps('');
+    setState(() => deps);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // initAsync();
+  }
+
+  bool isVersion(String input) =>
+      RegExp('^([1-9]\\d*)\\.(\\d+)\\.(\\d+)(?:-[br]{1}[0-9]?\\d*)?\$')
+          .hasMatch(input);
+
+  Future<List<List<String>>> searchDeps(String searchKeyword) async {
+    List<List<String>> _tmpList = [];
+    _tmpList.add(['Module name', 'Version', 'Description']);
+    await Process.run('python', ['-W', 'ignore', utilsPath, searchKeyword])
+        .then((result) {
+      stdout.write(result.stdout);
+      List<String> _tmp = result.stdout.split('\n');
+      for (String line in _tmp) _tmpList.add(line.split('\t'));
+      stderr.write(result.stderr);
+    });
+    return _tmpList;
   }
 }
