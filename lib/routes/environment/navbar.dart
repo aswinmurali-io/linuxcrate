@@ -1,5 +1,7 @@
 // Enviroment navigation bar code
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:linuxcrate/routes/environment/common.dart';
@@ -181,6 +183,16 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
         _description,
         selectedEnvironment.toString(),
       ]);
+      // python3 -m venv <env_title>
+      await Process.run('python', ['-m', 'venv', _title]).then((result) {
+        stdout.write(result.stdout);
+        stderr.write(result.stderr);
+      });
+      // await Process.run(f'${_title}/Scripts/activate.bat').then((result) {
+      //   stdout.write(result.stdout);
+      //   stderr.write(result.stderr);
+      // });
+      // <env_title>\Scripts\activate.bat
     } else
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Please fill the details!")));
