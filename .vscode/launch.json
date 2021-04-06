@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "Linux Crate",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+        }
+    ]
+}

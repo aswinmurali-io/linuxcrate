@@ -6,7 +6,7 @@ import 'package:linuxcrate/routes/environment/common.dart';
 import 'package:linuxcrate/routes/environment/content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-List<EnvironmentListTile> _environmentList = [];
+List<EnvironmentListTile> environmentList = [];
 
 // Environment list tile UI for navbar
 class EnvironmentListTile extends StatefulWidget {
@@ -40,19 +40,30 @@ class EnvironmentNavBar extends StatefulWidget {
 class _EnvironmentListTileState extends State<EnvironmentListTile> {
   bool _selected = false;
 
+  void onEnvironmentSelected() {
+    widget.setStateDashboard(() {
+      _selected = !_selected;
+      contentLayout = EnvironmentDetailsLayout(
+        title: widget.title,
+        desp: widget.desp,
+        environment: widget.environment,
+        setStateFromDashboard: widget.setStateDashboard,
+        environmentList: environmentList,
+      );
+    });
+  }
+
+  Future<void> onEnvironmentDeleted() async {
+    final preferences = await SharedPreferences.getInstance();
+    preferences.remove(widget.title);
+    environmentList.removeWhere((env) => env.title == widget.title);
+    widget.setStateDashboard(() => contentLayout = Container());
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        setState(() => _selected = !_selected);
-        widget.setStateDashboard(
-          () => contentLayout = EnvironmentDetailsLayout(
-            title: widget.title,
-            desp: widget.desp,
-            environment: widget.environment,
-          ),
-        );
-      },
+      onTap: onEnvironmentSelected,
       child: Container(
           color: _selected ? Colors.grey.withOpacity(0.1) : null,
           child: Column(
@@ -116,20 +127,13 @@ class _EnvironmentListTileState extends State<EnvironmentListTile> {
                   Spacer(),
                   if (_selected)
                     Flexible(
-                        flex: 0,
-                        child: Container(
-                          width: 3,
-                          color: Color(0xff5d71e1),
-                        ))
+                      flex: 0,
+                      child: Container(width: 3, color: Color(0xff5d71e1)),
+                    )
                 ],
               ),
               IconButton(
-                onPressed: () async {
-                  final preferences = await SharedPreferences.getInstance();
-                  preferences.remove(widget.title);
-                  _environmentList.removeWhere((env) => env.title == widget.title);
-                  widget.setStateDashboard(() => _environmentList);
-                },
+                onPressed: onEnvironmentDeleted,
                 icon: Icon(Icons.delete),
               ),
             ],
@@ -139,16 +143,17 @@ class _EnvironmentListTileState extends State<EnvironmentListTile> {
 }
 
 class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
-  String _title;
-  String _description;
+  String _title = '';
+  String _description = '';
 
-  Future<void> initAsync() async {
+  Future<void> loadEnvironmentListDetails() async {
     final preferences = await SharedPreferences.getInstance();
     Set<String> keys = preferences.getKeys();
+    print(keys);
     keys.forEach((key) {
       List<String> content = preferences.getStringList(key);
       setState(() {
-        _environmentList.add(EnvironmentListTile(
+        environmentList.add(EnvironmentListTile(
           title: key,
           desp: content[0],
           // TODO: provide a custom toString() and toEnvironment() implementation.
@@ -161,145 +166,153 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
     });
   }
 
+  Future<void> onEnvironmentMade(Environments selectedEnvironment) async {
+    if (_title.isNotEmpty && _description.isNotEmpty) {
+      setState(() {
+        environmentList.add(EnvironmentListTile(
+          title: _title,
+          desp: _description,
+          environment: selectedEnvironment,
+          setStateDashboard: widget.setStateDashboard,
+        ));
+      });
+      final preferences = await SharedPreferences.getInstance();
+      preferences.setStringList(_title, [
+        _description,
+        selectedEnvironment.toString(),
+      ]);
+    } else
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Please fill the details!")));
+  }
+
+  // void _debugClearEnvironment() async {
+  //   final preferences = await SharedPreferences.getInstance();
+  //   preferences.clear();
+  // }
+
   @override
   void initState() {
-    initAsync();
+    loadEnvironmentListDetails();
+    // _debugClearEnvironment();
     super.initState();
   }
+
+  Widget get environmentCreateMenu => Padding(
+        padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.blueGrey[400],
+            ),
+            borderRadius: BorderRadius.all(
+              Radius.circular(9.0),
+            ),
+          ),
+          child: SizedBox(
+            height: 40,
+            child: PopupMenuButton<Environments>(
+              onSelected: onEnvironmentMade,
+              itemBuilder: (BuildContext context) {
+                _title = '';
+                _description = '';
+                return <PopupMenuEntry<Environments>>[
+                  PopupMenuItem<Environments>(
+                    child: TextField(
+                      maxLength: 30,
+                      onChanged: (value) => _title = value,
+                      decoration: InputDecoration(
+                          hintText: 'Enter name for the environment'),
+                    ),
+                  ),
+                  PopupMenuItem<Environments>(
+                    child: TextField(
+                      maxLength: 50,
+                      onChanged: (value) => _description = value,
+                      decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Enter description'),
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem<Environments>(
+                    value: Environments.python,
+                    child: Row(
+                      children: [
+                        Expanded(flex: 1, child: Icon(Icons.code)),
+                        Expanded(
+                          flex: 10,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+                            child: Text(
+                              'Create new python environment with virtualenv.',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem<Environments>(
+                      value: Environments.dart,
+                      child: Row(
+                        children: [
+                          Expanded(flex: 1, child: Icon(Icons.code)),
+                          Expanded(
+                            flex: 10,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+                              child: Text(
+                                'Create new dart environment using pubspec.',
+                              ),
+                            ),
+                          ),
+                        ],
+                      )),
+                ];
+              },
+              child: Align(
+                  alignment: Alignment.center,
+                  child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(children: [
+                        WidgetSpan(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                            child: Icon(
+                              Icons.add,
+                              size: 15.0,
+                              color: Colors.blueGrey[400],
+                            ),
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'New Environment',
+                          style: TextStyle(
+                            fontSize: 15.0,
+                            color: Colors.blueGrey[400],
+                          ),
+                        ),
+                      ]))),
+            ),
+          ),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      controller: ScrollController(),
-      padding: EdgeInsets.all(0),
       children: [
-            Text(
-              'Linux Crate',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.blueGrey[400],
-                  ),
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(9.0),
-                  ),
-                ),
-                child: SizedBox(
-                  height: 40,
-                  child: PopupMenuButton<Environments>(
-                    onSelected: (Environments selectedEnvironment) async {
-                      setState(() {
-                        _environmentList.add(EnvironmentListTile(
-                          title: _title,
-                          desp: _description,
-                          environment: selectedEnvironment,
-                          setStateDashboard: widget.setStateDashboard,
-                        ));
-                      });
-                      final preferences = await SharedPreferences.getInstance();
-                      preferences.setStringList(_title, [
-                        _description,
-                        selectedEnvironment.toString(),
-                      ]);
-                    },
-                    itemBuilder: (BuildContext context) {
-                      _title = null;
-                      _description = null;
-                      return <PopupMenuEntry<Environments>>[
-                        PopupMenuItem<Environments>(
-                          child: TextField(
-                            maxLength: 30,
-                            onChanged: (value) => _title = value,
-                            decoration: InputDecoration(
-                                hintText: 'Enter name for the environment'),
-                          ),
-                        ),
-                        PopupMenuItem<Environments>(
-                          child: TextField(
-                            maxLength: 50,
-                            onChanged: (value) => _description = value,
-                            decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: 'Enter description'),
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        PopupMenuItem<Environments>(
-                          value: Environments.python,
-                          child: Row(
-                            children: [
-                              Expanded(flex: 1, child: Icon(Icons.code)),
-                              Expanded(
-                                flex: 10,
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(20, 0, 0, 0),
-                                  child: Text(
-                                    'Create new python environment with virtualenv.',
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        PopupMenuItem<Environments>(
-                            value: Environments.dart,
-                            child: Row(
-                              children: [
-                                Expanded(flex: 1, child: Icon(Icons.code)),
-                                Expanded(
-                                  flex: 10,
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(20, 0, 0, 0),
-                                    child: Text(
-                                      'Create new dart environment using pubspec.',
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )),
-                      ];
-                    },
-                    child: Align(
-                        alignment: Alignment.center,
-                        child: RichText(
-                            textAlign: TextAlign.center,
-                            text: TextSpan(children: [
-                              WidgetSpan(
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                                  child: Icon(
-                                    Icons.add,
-                                    size: 15.0,
-                                    color: Colors.blueGrey[400],
-                                  ),
-                                ),
-                              ),
-                              TextSpan(
-                                text: 'New Environment',
-                                style: TextStyle(
-                                  fontSize: 15.0,
-                                  color: Colors.blueGrey[400],
-                                ),
-                              ),
-                            ]))),
-                  ),
-                ),
-              ),
-            ),
-            const Padding(padding: const EdgeInsets.fromLTRB(0, 30, 0, 0)),
-          ] +
-          _environmentList,
+        Text(
+          'Linux Crate',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        environmentCreateMenu,
+        const Padding(padding: const EdgeInsets.fromLTRB(0, 30, 0, 0)),
+      ]..addAll(environmentList),
     );
   }
 }

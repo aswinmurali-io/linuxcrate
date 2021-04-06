@@ -1,7 +1,7 @@
 // Enviroment shared data
 
-import 'package:linuxcrate/routes/environment/content.dart';
+import 'package:flutter/material.dart';
 
 enum Environments { python, dart }
 
-EnvironmentDetailsLayout contentLayout = EnvironmentDetailsLayout();
+Widget contentLayout = Container();

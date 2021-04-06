@@ -5,14 +5,24 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:linuxcrate/routes/environment/common.dart';
+import 'package:linuxcrate/routes/environment/navbar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EnvironmentDetailsLayout extends StatefulWidget {
   final String title;
-
   final String desp;
   final Environments environment;
-  EnvironmentDetailsLayout({Key key, this.title, this.desp, this.environment})
-      : super(key: key);
+  final StateSetter setStateFromDashboard;
+  final List<EnvironmentListTile> environmentList;
+
+  EnvironmentDetailsLayout({
+    Key key,
+    this.title,
+    this.desp,
+    this.environment,
+    this.setStateFromDashboard,
+    this.environmentList,
+  }) : super(key: key);
 
   @override
   _EnvironmentDetailsLayoutState createState() =>
@@ -87,11 +97,62 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
           });
         },
       );
+
+  void deleteEnvironment() async {
+    final preferences = await SharedPreferences.getInstance();
+    preferences.remove(widget.title);
+    widget.environmentList.removeWhere((env) => env.title == widget.title);
+    widget.setStateFromDashboard(() => contentLayout = Container());
+  }
+
+  void saveEnvironment() async {
+    final preferences = await SharedPreferences.getInstance();
+    if (titleTextFieldController.text.isNotEmpty &&
+        despTextFieldController.text.isNotEmpty &&
+        envTextFieldController.text.isNotEmpty) {
+      widget.environmentList.removeWhere((env) => env.title == widget.title);
+      preferences.remove(widget.title);
+      preferences.setStringList(titleTextFieldController.text, [
+        despTextFieldController.text,
+        envTextFieldController.text,
+      ]);
+      widget.environmentList.add(EnvironmentListTile(
+        title: titleTextFieldController.text,
+        desp: despTextFieldController.text,
+        environment: envTextFieldController.text == 'Environments.python'
+            ? Environments.python
+            : Environments.dart,
+        setStateDashboard: widget.setStateFromDashboard,
+      ));
+      widget.setStateFromDashboard(() {
+        contentLayout = EnvironmentDetailsLayout(
+          title: titleTextFieldController.text,
+          desp: despTextFieldController.text,
+          environment: envTextFieldController.text == 'Environments.python'
+              ? Environments.python
+              : Environments.dart,
+          environmentList: widget.environmentList,
+          setStateFromDashboard: widget.setStateFromDashboard,
+        );
+      });
+    } else
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Cannot have empty fields!")));
+  }
+
+  @override
+  void dispose() {
+    titleTextFieldController.dispose();
+    despTextFieldController.dispose();
+    envTextFieldController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    titleTextFieldController.text = widget?.title ?? '';
-    despTextFieldController.text = widget?.desp ?? '';
-    envTextFieldController.text = widget?.environment?.toString() ?? '';
+    titleTextFieldController.text = widget?.title;
+    despTextFieldController.text = widget?.desp;
+    envTextFieldController.text = widget?.environment?.toString();
 
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -101,58 +162,130 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
           detailsTemplate("Name", titleTextFieldController),
           detailsTemplate("Description", despTextFieldController),
           detailsTemplate("Environment", envTextFieldController),
-          ElevatedButton.icon(
-            onPressed: addDepsDialog,
-            icon: Icon(Icons.add),
-            label: Text('Add'),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
-              child: Scrollbar(
-                child: SingleChildScrollView(
-                  child: depsListGenerator(deps),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+            child: Wrap(
+              spacing: 20,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: addDepsDialog,
+                  icon: Icon(Icons.add),
+                  label: Text('Add'),
                 ),
-              ),
+                ElevatedButton.icon(
+                  onPressed: saveEnvironment,
+                  icon: Icon(Icons.save),
+                  label: Text('Save'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: deleteEnvironment,
+                  icon: Icon(Icons.delete),
+                  label: Text('Delete'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: addDepsDialog,
+                  icon: Icon(Icons.open_in_browser),
+                  label: Text('Open Folder'),
+                ),
+              ],
             ),
           ),
+          FutureBuilder<List<List<String>>>(
+              future: getLocalDeps(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final deps = snapshot.data;
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                      child: Scrollbar(
+                          child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: deps.length,
+                        cacheExtent: 15,
+                        itemBuilder: (context, index) => GridView.builder(
+                          key: Key('$index'),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                  childAspectRatio: 6, crossAxisCount: 3),
+                          shrinkWrap: true,
+                          itemCount: deps[index].length,
+                          itemBuilder: (context, subindex) {
+                            return DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    width: 0.5, color: Colors.blueGrey),
+                              ),
+                              child: ListTile(
+                                tileColor: index == 0 ? Colors.grey[100] : null,
+                                title: subindex == 1 && index != 0
+                                    ? Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                            Text('${deps[index][subindex]}'),
+                                            IconButton(
+                                              onPressed: () {},
+                                              icon: Icon(Icons.file_upload),
+                                            )
+                                          ])
+                                    : Text('${deps[index][subindex]}'),
+                                onTap: () {},
+                              ),
+                            );
+                          },
+                        ),
+                      )),
+                    ),
+                  );
+                }
+                return Expanded(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              })
         ],
       ),
     );
   }
 
-  Widget depsListGenerator(List deps) => ListView.builder(
+  Widget depsListGenerator(List deps) {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: deps.length,
+      cacheExtent: 15,
+      itemBuilder: (context, index) => GridView.builder(
+        key: Key('$index'),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            childAspectRatio: 6, crossAxisCount: 3),
         shrinkWrap: true,
-        itemCount: deps.length,
-        itemBuilder: (context, index) => GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              childAspectRatio: 6, crossAxisCount: 3),
-          shrinkWrap: true,
-          itemCount: deps[index].length,
-          itemBuilder: (context, subindex) {
-            return Container(
-              decoration: BoxDecoration(
-                border: Border.all(width: 0.5, color: Colors.blueGrey),
-              ),
-              child: ListTile(
-                tileColor: index == 0 ? Colors.grey[100] : null,
-                title: subindex == 1 && index != 0
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                            Text('${deps[index][subindex]}'),
-                            IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.file_upload),
-                            )
-                          ])
-                    : Text('${deps[index][subindex]}'),
-                onTap: () {},
-              ),
-            );
-          },
-        ),
-      );
+        itemCount: deps[index].length,
+        itemBuilder: (context, subindex) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(width: 0.5, color: Colors.blueGrey),
+            ),
+            child: ListTile(
+              tileColor: index == 0 ? Colors.grey[100] : null,
+              title: subindex == 1 && index != 0
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                          Text('${deps[index][subindex]}'),
+                          IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.file_upload),
+                          )
+                        ])
+                  : Text('${deps[index][subindex]}'),
+              onTap: () {},
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   // The environment details UI. Things like name, description, etc, _________
   Widget detailsTemplate(String name, TextEditingController controller) => Row(
@@ -173,33 +306,20 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
         ],
       );
 
-  Future<List<List<String>>> getLocalDeps(String envName) async {
+  Future<List<List<String>>> getLocalDeps() async {
     List<List<String>> _tmpList = [];
     _tmpList.add(['Module name', 'Version', 'Description']);
     await Process.run('python', ['-m', 'pip', 'freeze']).then((result) {
-      stdout.write(result.stdout);
+      // stdout.write(result.stdout);
+      // stderr.write(result.stderr);
       List<String> _tmp = result.stdout.split('\n');
-
       for (String line in _tmp) {
         List<String> _o = line.split('==');
         _o.add('');
         _tmpList.add(_o);
       }
-
-      stderr.write(result.stderr);
     });
     return _tmpList;
-  }
-
-  void initAsync() async {
-    deps = await getLocalDeps('');
-    setState(() => deps);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // initAsync();
   }
 
   bool isVersion(String input) =>
