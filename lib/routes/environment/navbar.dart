@@ -188,25 +188,14 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
         stdout.write(result.stdout);
         stderr.write(result.stderr);
       });
-      // await Process.run(f'${_title}/Scripts/activate.bat').then((result) {
-      //   stdout.write(result.stdout);
-      //   stderr.write(result.stderr);
-      // });
-      // <env_title>\Scripts\activate.bat
     } else
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Please fill the details!")));
   }
 
-  // void _debugClearEnvironment() async {
-  //   final preferences = await SharedPreferences.getInstance();
-  //   preferences.clear();
-  // }
-
   @override
   void initState() {
     loadEnvironmentListDetails();
-    // _debugClearEnvironment();
     super.initState();
   }
 

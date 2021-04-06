@@ -1,6 +1,7 @@
 // Enviroment content layout code
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -42,54 +43,51 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
 
   Timer _debounce;
 
-  String get utilsPath => 'lib/utils/pypi.py';
+  String _pythonPipOutput = '';
+
+  StateSetter setStateFromAlertDialog;
 
   Future<dynamic> addDepsDialog() => showDialog(
         context: context,
         builder: (BuildContext context) {
+          _pythonPipOutput = '';
           return StatefulBuilder(
               builder: (BuildContext context, setStateDialog) {
+            setStateFromAlertDialog = setStateDialog;
             return AlertDialog(
               title: Text("Add Dependencies"),
-              content: SizedBox(
-                width: 1000,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      onChanged: (searchKeyword) {
-                        if (_debounce?.isActive ?? false) _debounce.cancel();
-                        _debounce =
-                            Timer(const Duration(milliseconds: 500), () async {
-                          _searchDepsList = await searchDeps(searchKeyword);
-                          setStateDialog(() => _searchDepsList);
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Search packages',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    Scrollbar(
-                      child: SingleChildScrollView(
-                        child: SizedBox(
-                          height: 500,
-                          child: depsListGenerator(_searchDepsList),
+              content: Scrollbar(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        onChanged: (searchKeyword) {
+                          if (_debounce?.isActive ?? false) _debounce.cancel();
+                          _debounce = Timer(const Duration(milliseconds: 500),
+                              () async {
+                            _searchDepsList = await searchDeps(searchKeyword);
+                            setStateDialog(() => _searchDepsList);
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Search packages',
+                          border: OutlineInputBorder(),
                         ),
                       ),
-                    )
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(_pythonPipOutput),
+                      ),
+                      depsListGenerator(_searchDepsList)
+                    ],
+                  ),
                 ),
               ),
               actions: [
                 TextButton.icon(
-                  label: Text("Cancel"),
-                  icon: Icon(Icons.cancel),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                TextButton.icon(
-                  label: Text("Save"),
-                  icon: Icon(Icons.save),
+                  label: Text("Close"),
+                  icon: Icon(Icons.close),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -103,6 +101,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     preferences.remove(widget.title);
     widget.environmentList.removeWhere((env) => env.title == widget.title);
     widget.setStateFromDashboard(() => contentLayout = Container());
+    await Directory(widget.title).delete(recursive: true);
   }
 
   void saveEnvironment() async {
@@ -110,7 +109,6 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     if (titleTextFieldController.text.isNotEmpty &&
         despTextFieldController.text.isNotEmpty &&
         envTextFieldController.text.isNotEmpty) {
-      
       widget.environmentList.removeWhere((env) => env.title == widget.title);
       preferences.remove(widget.title);
       preferences.setStringList(titleTextFieldController.text, [
@@ -183,11 +181,11 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
                   icon: Icon(Icons.delete),
                   label: Text('Delete'),
                 ),
-                ElevatedButton.icon(
-                  onPressed: addDepsDialog,
-                  icon: Icon(Icons.open_in_browser),
-                  label: Text('Open Folder'),
-                ),
+                // ElevatedButton.icon(
+                //   onPressed: addDepsDialog,
+                //   icon: Icon(Icons.open_in_browser),
+                //   label: Text('Open Folder'),
+                // ),
               ],
             ),
           ),
@@ -196,7 +194,9 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   final deps = snapshot.data;
-                  return depsListGenerator(deps);
+                  return Expanded(
+                    child: depsListGenerator(deps),
+                  );
                 }
                 return Expanded(
                   child: Center(
@@ -209,48 +209,73 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     );
   }
 
+  void downloadDeps(String depName, String envName) async {
+    Process process = await Process.start(
+        'python', [venvExecPath, envName, 'pip install $depName']);
+    _pythonPipOutput = '';
+    process.stdout.transform(utf8.decoder).forEach((txt) {
+      print(txt);
+      if (setStateFromAlertDialog != null)
+        setStateFromAlertDialog(() => _pythonPipOutput += txt);
+    });
+  }
+
+  void removeDeps(String depName, String envName) async {
+    Process process = await Process.start(
+        'python', [venvExecPath, envName, 'pip uninstall $depName -y']);
+    _pythonPipOutput = '';
+    process.stdout.transform(utf8.decoder).forEach((txt) {
+      print(txt);
+      if (setStateFromAlertDialog != null)
+        setStateFromAlertDialog(() => _pythonPipOutput += txt);
+    });
+  }
+
   Widget depsListGenerator(List deps) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-        child: Scrollbar(
-          child: ListView.builder(
+    final screenSize = MediaQuery.of(context).size;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+      child: SizedBox(
+        width: screenSize.width / 1.2,
+        height: screenSize.height / 1.2,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: deps.length,
+          cacheExtent: 15,
+          itemBuilder: (context, index) => GridView.builder(
+            key: Key('$index'),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                childAspectRatio: 6, crossAxisCount: 3),
             shrinkWrap: true,
-            itemCount: deps.length,
-            cacheExtent: 15,
-            itemBuilder: (context, index) => GridView.builder(
-              key: Key('$index'),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  childAspectRatio: 6, crossAxisCount: 3),
-              shrinkWrap: true,
-              itemCount: deps[index].length,
-              itemBuilder: (context, subindex) {
-                return DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 0.5, color: Colors.blueGrey),
-                  ),
-                  child: ListTile(
-                    tileColor: index == 0 ? Colors.grey[100] : null,
-                    title: subindex == 1 && index != 0
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                                Text('${deps[index][subindex]}'),
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.file_download),
-                                ),
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.delete),
-                                ),
-                              ])
-                        : Text('${deps[index][subindex]}'),
-                    onTap: () {},
-                  ),
-                );
-              },
-            ),
+            itemCount: deps[index].length,
+            itemBuilder: (context, subindex) {
+              return DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(width: 0.5, color: Colors.blueGrey),
+                ),
+                child: ListTile(
+                  tileColor: index == 0 ? Colors.grey[100] : null,
+                  title: subindex == 1 && index != 0
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                              Text('${deps[index][subindex]}'),
+                              IconButton(
+                                onPressed: () => downloadDeps(
+                                    deps[index][subindex - 1], widget.title),
+                                icon: Icon(Icons.file_download),
+                              ),
+                              IconButton(
+                                onPressed: () => removeDeps(
+                                    deps[index][subindex - 1], widget.title),
+                                icon: Icon(Icons.delete),
+                              ),
+                            ])
+                      : Text('${deps[index][subindex]}'),
+                  onTap: () {},
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -279,7 +304,8 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
   Future<List<List<String>>> getLocalDeps() async {
     List<List<String>> _tmpList = [];
     _tmpList.add(['Module name', 'Version', 'Description']);
-    await Process.run('python', ['-m', 'pip', 'freeze']).then((result) {
+    await Process.run('python', [venvExecPath, '\"pip freeze\"'])
+        .then((result) {
       // stdout.write(result.stdout);
       // stderr.write(result.stderr);
       List<String> _tmp = result.stdout.split('\n');
