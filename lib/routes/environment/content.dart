@@ -88,7 +88,23 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
                 TextButton.icon(
                   label: Text("Close"),
                   icon: Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    widget.setStateFromDashboard(
+                        () => contentLayout = Container());
+                    widget.setStateFromDashboard(
+                      () => contentLayout = EnvironmentDetailsLayout(
+                        title: titleTextFieldController.text,
+                        desp: despTextFieldController.text,
+                        environment:
+                            envTextFieldController.text == 'Environments.python'
+                                ? Environments.python
+                                : Environments.dart,
+                        environmentList: widget.environmentList,
+                        setStateFromDashboard: widget.setStateFromDashboard,
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                  },
                 ),
               ],
             );
@@ -101,6 +117,9 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     preferences.remove(widget.title);
     widget.environmentList.removeWhere((env) => env.title == widget.title);
     widget.setStateFromDashboard(() => contentLayout = Container());
+    final process = await Process.start(
+        'python', [venvExecPath, widget.title, 'deactivate']);
+    process.stdout.transform(utf8.decoder).forEach(print);
     await Directory(widget.title).delete(recursive: true);
   }
 
@@ -302,20 +321,17 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
       );
 
   Future<List<List<String>>> getLocalDeps() async {
-    List<List<String>> _tmpList = [];
-    _tmpList.add(['Module name', 'Version', 'Description']);
-    await Process.run('python', [venvExecPath, '\"pip freeze\"'])
-        .then((result) {
-      // stdout.write(result.stdout);
-      // stderr.write(result.stderr);
-      List<String> _tmp = result.stdout.split('\n');
-      for (String line in _tmp) {
-        List<String> _o = line.split('==');
-        _o.add('');
-        _tmpList.add(_o);
-      }
+    List<List<String>> extractedDeps = [
+      ['Module name', 'Version', 'Description']
+    ];
+    final process = await Process.start(
+        'python', [venvExecPath, widget.title, 'pip freeze']);
+    await process.stdout.transform(utf8.decoder).forEach((depLine) {
+      // Description is disabled in local deps list. Therefore add padding strings for this.
+      final depDetails = depLine.split('==')..add('');
+      extractedDeps.add(depDetails);
     });
-    return _tmpList;
+    return extractedDeps;
   }
 
   bool isVersion(String input) =>

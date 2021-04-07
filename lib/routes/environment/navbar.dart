@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:linuxcrate/routes/environment/common.dart';
 import 'package:linuxcrate/routes/environment/content.dart';
+import 'package:linuxcrate/routes/environment/custom_popup_menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 List<EnvironmentListTile> environmentList = [];
@@ -213,6 +214,7 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
           child: SizedBox(
             height: 40,
             child: PopupMenuButton<Environments>(
+              onCanceled: null,
               onSelected: onEnvironmentMade,
               itemBuilder: (BuildContext context) {
                 _title = '';
@@ -232,7 +234,8 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
                       onChanged: (value) => _description = value,
                       decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Enter description'),
+                          hintText:
+                              'Enter keyword for reference'),
                     ),
                   ),
                   const PopupMenuDivider(),
@@ -253,23 +256,23 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
                       ],
                     ),
                   ),
-                  const PopupMenuDivider(),
-                  PopupMenuItem<Environments>(
-                      value: Environments.dart,
-                      child: Row(
-                        children: [
-                          Expanded(flex: 1, child: Icon(Icons.code)),
-                          Expanded(
-                            flex: 10,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
-                              child: Text(
-                                'Create new dart environment using pubspec.',
-                              ),
-                            ),
-                          ),
-                        ],
-                      )),
+                  // const PopupMenuDivider(),
+                  // PopupMenuItem<Environments>(
+                  //     value: Environments.dart,
+                  //     child: Row(
+                  //       children: [
+                  //         Expanded(flex: 1, child: Icon(Icons.code)),
+                  //         Expanded(
+                  //           flex: 10,
+                  //           child: Padding(
+                  //             padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+                  //             child: Text(
+                  //               'Create new dart environment using pubspec.',
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     )),
                 ];
               },
               child: Align(
