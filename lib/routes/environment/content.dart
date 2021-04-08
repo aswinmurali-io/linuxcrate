@@ -181,7 +181,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
           detailsTemplate("Description", despTextFieldController),
           detailsTemplate("Environment", envTextFieldController),
           Padding(
-            padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+            padding: const EdgeInsets.fromLTRB(0, 15, 0, 10),
             child: Wrap(
               spacing: 20,
               children: [
@@ -200,6 +200,16 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
                   icon: Icon(Icons.delete),
                   label: Text('Delete'),
                 ),
+                ElevatedButton.icon(
+                  onPressed: () => null,
+                  icon: Icon(Icons.build),
+                  label: Text('Launch Build Script'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => null,
+                  icon: Icon(Icons.open_with),
+                  label: Text('Open Editor'),
+                ),
                 // ElevatedButton.icon(
                 //   onPressed: addDepsDialog,
                 //   icon: Icon(Icons.open_in_browser),
@@ -208,6 +218,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
               ],
             ),
           ),
+          Text('Terminal Status\n$_pythonPipOutput'),
           FutureBuilder<List<List<String>>>(
               future: getLocalDeps(),
               builder: (context, snapshot) {
@@ -234,8 +245,12 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     _pythonPipOutput = '';
     process.stdout.transform(utf8.decoder).forEach((txt) {
       print(txt);
-      if (setStateFromAlertDialog != null)
-        setStateFromAlertDialog(() => _pythonPipOutput += txt);
+      _pythonPipOutput += txt;
+      try {
+        if (setStateFromAlertDialog != null)
+          setStateFromAlertDialog(() => _pythonPipOutput);
+      } catch (e) {}
+      setState(() => _pythonPipOutput);
     });
   }
 
@@ -245,15 +260,19 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     _pythonPipOutput = '';
     process.stdout.transform(utf8.decoder).forEach((txt) {
       print(txt);
-      if (setStateFromAlertDialog != null)
-        setStateFromAlertDialog(() => _pythonPipOutput += txt);
+      _pythonPipOutput += txt;
+      try {
+        if (setStateFromAlertDialog != null)
+          setStateFromAlertDialog(() => _pythonPipOutput);
+      } catch (e) {}
+      setState(() => _pythonPipOutput);
     });
   }
 
   Widget depsListGenerator(List deps) {
     final screenSize = MediaQuery.of(context).size;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+      padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
       child: SizedBox(
         width: screenSize.width / 1.2,
         height: screenSize.height / 1.2,
@@ -328,9 +347,18 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
         'python', [venvExecPath, widget.title, 'pip freeze']);
     await process.stdout.transform(utf8.decoder).forEach((depLine) {
       // Description is disabled in local deps list. Therefore add padding strings for this.
-      final depDetails = depLine.split('==')..add('');
-      extractedDeps.add(depDetails);
+      final dependies = depLine.split('\n');
+      dependies.forEach((deps) {
+        List<String> _formattedDepList = [];
+        final depDetails = deps.split('==');
+        _formattedDepList
+          ..addAll(depDetails)
+          ..add('');
+        extractedDeps.addAll([_formattedDepList]);
+      });
     });
+    // Remove some unwanted padding at the end of the list
+    extractedDeps..removeLast();
     return extractedDeps;
   }
 
@@ -348,6 +376,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
       List<String> _tmp = result.stdout.split('\n');
       for (String line in _tmp) _tmpList.add(line.split('\t'));
     });
+    _tmpList..removeLast();
     return _tmpList;
   }
 }

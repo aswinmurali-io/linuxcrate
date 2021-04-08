@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:linuxcrate/routes/environment/common.dart';
 import 'package:linuxcrate/routes/environment/content.dart';
-import 'package:linuxcrate/routes/environment/custom_popup_menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 List<EnvironmentListTile> environmentList = [];
