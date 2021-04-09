@@ -1,11 +1,16 @@
 {
+    "version": "0.2.0",
     "configurations": [
         {
             "name": "Linux Crate",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
+            "args": [],
             "flutterMode": "debug",
+            "env": {
+                "DISPLAY": "127.0.1.1:10.0"
+            },
         }
     ]
 }
