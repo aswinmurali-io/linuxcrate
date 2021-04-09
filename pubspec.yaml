@@ -14,6 +14,7 @@ dependencies:
   google_fonts: ^1.0.0
   flutter_feather_icons: ^1.0.3
   shared_preferences: ^2.0.5
+  system_info: ^1.0.0
 
 dev_dependencies:
   flutter_test:

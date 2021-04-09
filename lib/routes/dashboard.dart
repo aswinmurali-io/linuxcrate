@@ -2,15 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:linuxcrate/routes/environment/common.dart';
 import 'package:linuxcrate/routes/environment/navbar.dart';
+import 'package:linuxcrate/routes/pkg_manager/content.dart';
 
 class Dashboard extends StatefulWidget {
   @override
   _DashboardState createState() => _DashboardState();
 }
 
+Widget dashboardRoute = Container();
+
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0;
   final _scaffoldkey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    dashboardRoute = EnvironmentNavBar(setStateDashboard: setState);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,27 +36,40 @@ class _DashboardState extends State<Dashboard> {
                   Expanded(
                     child: NavigationRail(
                       selectedIndex: _selectedIndex,
-                      onDestinationSelected: (int index) =>
-                          setState(() => _selectedIndex = index),
+                      onDestinationSelected: (int index) => setState(() {
+                        switch (index) {
+                          case 0:
+                            dashboardRoute =
+                                EnvironmentNavBar(setStateDashboard: setState);
+                            break;
+                          case 1:
+                            dashboardRoute = PackageManagerRoute();
+                            contentLayout = Container();
+                            break;
+                          default:
+                        }
+                      }),
                       leading: Column(
                         children: [
-                          Container(
-                            child: IconButton(
-                              icon: Icon(
-                                FeatherIcons.menu,
-                                size: 19,
-                                color: Colors.grey[800],
-                              ),
-                              onPressed: () =>
-                                  _scaffoldkey.currentState.openDrawer(),
-                            ),
-                            margin: EdgeInsets.only(bottom: 18),
-                          ),
+                          // Container(
+                          //   child: IconButton(
+                          //     icon: Icon(
+                          //       FeatherIcons.menu,
+                          //       size: 19,
+                          //       color: Colors.grey[800],
+                          //     ),
+                          //     onPressed: () =>
+                          //         _scaffoldkey.currentState.openDrawer(),
+                          //   ),
+                          //   margin: EdgeInsets.only(bottom: 18),
+                          // ),
                         ],
                       ),
                       labelType: NavigationRailLabelType.none,
-                      selectedIconTheme: IconThemeData(size: 19),
+                      // selectedIconTheme: IconThemeData(size: 19),
                       unselectedIconTheme:
+                          IconThemeData(size: 19, color: Colors.grey[500]),
+                      selectedIconTheme:
                           IconThemeData(size: 19, color: Colors.grey[500]),
                       destinations: [
                         NavigationRailDestination(
@@ -89,9 +111,7 @@ class _DashboardState extends State<Dashboard> {
               flex: 1,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
-                child: EnvironmentNavBar(
-                  setStateDashboard: setState,
-                ),
+                child: dashboardRoute,
               ),
             ),
             Flexible(
