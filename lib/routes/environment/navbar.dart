@@ -63,6 +63,12 @@ class _EnvironmentListTileState extends State<EnvironmentListTile> {
   }
 
   @override
+  void initState() {
+    environmentList.clear();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onEnvironmentSelected,
