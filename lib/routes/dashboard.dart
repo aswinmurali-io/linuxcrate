@@ -108,7 +108,7 @@ class _DashboardState extends State<Dashboard> {
                   color: Colors.grey.withOpacity(.2),
                 )),
             Flexible(
-              flex: 1,
+              flex: 2,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: dashboardRoute,
