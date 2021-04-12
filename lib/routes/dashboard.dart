@@ -3,6 +3,7 @@ import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:linuxcrate/routes/environment/common.dart';
 import 'package:linuxcrate/routes/environment/navbar.dart';
 import 'package:linuxcrate/routes/pkg_manager/content.dart';
+import 'package:linuxcrate/routes/pkg_manager/navbar.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -43,8 +44,8 @@ class _DashboardState extends State<Dashboard> {
                                 EnvironmentNavBar(setStateDashboard: setState);
                             break;
                           case 1:
-                            dashboardRoute = PackageManagerRoute();
-                            contentLayout = Container();
+                            dashboardRoute = PackageManagerNavBar();
+                            contentLayout = PackageManagerContent();
                             break;
                           default:
                         }

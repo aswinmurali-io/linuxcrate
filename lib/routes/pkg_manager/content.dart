@@ -1,75 +1,153 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:linuxcrate/routes/pkg_manager/packages.dart';
+import 'package:string_similarity/string_similarity.dart';
 
-class PackageManagerRoute extends StatefulWidget {
-  PackageManagerRoute({Key key}) : super(key: key);
+String stdoutTextWidget = '';
+StateSetter setStateFromContent;
+
+class PackageManagerContent extends StatefulWidget {
+  PackageManagerContent({Key key}) : super(key: key);
 
   @override
-  _PackageManagerRouteState createState() => _PackageManagerRouteState();
+  _PackageManagerContentState createState() => _PackageManagerContentState();
 }
 
-class _PackageManagerRouteState extends State<PackageManagerRoute> {
-  String _searchPackageKeyword = '';
+class _PackageManagerContentState extends State<PackageManagerContent> {
+  final terminalOutputTextController = TextEditingController();
+
+  List<String> _packagesInfo = [];
+  String _searchKeyword = '';
+
+  final packageManager = PackageManager.getPackageManager();
+
+  @override
+  void initState() {
+    setStateFromContent = setState;
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    terminalOutputTextController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
-    return Wrap(
-      spacing: 3.0,
-      children: [
-        // Packages search bar
-        TextField(
-          onChanged: (value) => setState(() => _searchPackageKeyword = value),
-          decoration: InputDecoration(
-            prefixIcon: Icon(Icons.search),
-            hintText: 'Search packages',
-            border: OutlineInputBorder(),
-          ),
+    terminalOutputTextController
+      ..text = stdoutTextWidget
+      ..selection = TextSelection.fromPosition(
+        TextPosition(
+          offset: terminalOutputTextController.text.length,
         ),
-        // Locally installed packages list
-        Scrollbar(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: SizedBox(
-              height: screenSize.height / 1.2,
-              child: FutureBuilder<List<Package>>(
-                future: Package.searchLocalPackages(_searchPackageKeyword),
-                builder: (context, snapshot) {
-                  final packages = snapshot.data;
-
-                  if (snapshot.hasData)
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: packages.length,
-                      itemBuilder: (context, index) => ListTile(
-                        leading: IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () =>
-                              Package.removeLocalPackages(packages[index].name),
-                        ),
-                        trailing: IconButton(
-                          icon: Icon(Icons.update),
-                          onPressed: () =>
-                              Package.updateLocalPackages(packages[index].name),
-                        ),
-                        title: SizedBox(
-                            width: 300, child: Text(packages[index].name)),
-                        subtitle: Text(packages[index].description),
-                        isThreeLine: false,
-                        onTap: () {},
-                      ),
-                    );
-
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                },
+      );
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Search bar for online packages
+          TextField(
+            onChanged: (value) {
+              _packagesInfo.clear();
+              setState(() => _searchKeyword = value);
+            },
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search Packages Online',
+              border: OutlineInputBorder(),
+              suffixIcon: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextButton.icon(
+                  label: Text('Install'),
+                  icon: Icon(Icons.download_rounded),
+                  onPressed: () async {
+                    if (_searchKeyword.isNotEmpty)
+                      setState(() => packageManager
+                          .installGlobalPackage(_searchKeyword)
+                          .then((stdout) => stdoutTextWidget = stdout));
+                  },
+                ),
               ),
             ),
           ),
-        ),
-      ],
+          const Padding(
+            padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+            child: Text(
+              "Terminal Output",
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          // Terminal Output Widget
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+            child: SizedBox(
+              height: 200,
+              child: TextField(
+                readOnly: true,
+                maxLines: null,
+                expands: true,
+                controller: terminalOutputTextController,
+                style: TextStyle(color: Colors.white),
+                textAlignVertical: TextAlignVertical.top,
+                cursorColor: Colors.white,
+                showCursor: true,
+                cursorWidth: 10,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  fillColor: Colors.black,
+                  filled: true,
+                ),
+              ),
+            ),
+          ),
+          FutureBuilder<List<String>>(future: () async {
+            final packages = StringSimilarity.findBestMatch(
+                _searchKeyword,
+                await packageManager
+                    .searchGlobalPackages(_searchKeyword)
+                    .toList());
+            return packages.ratings.map((r) => r.target).toList()
+              ..insert(0, packages.bestMatch.target);
+          }(), builder: (context, snapshot) {
+            final _packagesInfo = snapshot.data;
+            if (snapshot.hasData)
+              return Expanded(
+                child: Scrollbar(
+                  child: GridView.builder(
+                    itemCount: _packagesInfo.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 4.0,
+                    ),
+                    itemBuilder: (context, index) {
+                      final content = _packagesInfo[index].split(' ');
+                      return ListTile(
+                        title: Text(
+                          content[0],
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(content.skip(2).join(' ')),
+                        isThreeLine: true,
+                        onTap: () async => setState(() => packageManager
+                            .installGlobalPackage(content[0])
+                            .then((stdout) => stdoutTextWidget = stdout)),
+                      );
+                    },
+                  ),
+                ),
+              );
+            return Center();
+          }),
+        ],
+      ),
     );
   }
 }
