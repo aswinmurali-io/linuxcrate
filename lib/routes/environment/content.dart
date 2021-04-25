@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:linuxcrate/routes/dashboard.dart';
 import 'package:linuxcrate/routes/environment/common.dart';
 import 'package:linuxcrate/routes/environment/navbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -118,7 +119,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     widget.environmentList.removeWhere((env) => env.title == widget.title);
     widget.setStateFromDashboard(() => contentLayout = Container());
     final process = await Process.start(
-        'python', [venvExecPath, widget.title, 'deactivate']);
+        python, [venvExecPath, widget.title, 'deactivate']);
     process.stdout.transform(utf8.decoder).forEach(print);
     await Directory(widget.title).delete(recursive: true);
   }
@@ -211,7 +212,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
                 //   label: Text('Open Editor'),
                 // ),
                 ElevatedButton.icon(
-                  onPressed: () => Process.start('explorer.exe', [widget.title]),
+                  onPressed: () => Process.start(explorer, [widget.title]),
                   icon: Icon(Icons.open_in_browser),
                   label: Text('Open Folder'),
                 ),
@@ -241,7 +242,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
 
   void downloadDeps(String depName, String envName) async {
     Process process = await Process.start(
-        'python', [venvExecPath, envName, 'pip install $depName']);
+        python, [venvExecPath, envName, 'pip install $depName']);
     _pythonPipOutput = '';
     process.stdout.transform(utf8.decoder).forEach((txt) {
       print(txt);
@@ -256,7 +257,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
 
   void removeDeps(String depName, String envName) async {
     Process process = await Process.start(
-        'python', [venvExecPath, envName, 'pip uninstall $depName -y']);
+        python, [venvExecPath, envName, 'pip uninstall $depName -y']);
     _pythonPipOutput = '';
     process.stdout.transform(utf8.decoder).forEach((txt) {
       print(txt);
@@ -344,7 +345,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
       ['Module name', 'Version', 'Description']
     ];
     final process = await Process.start(
-        'python', [venvExecPath, widget.title, 'pip freeze']);
+        python, [venvExecPath, widget.title, 'pip freeze']);
     await process.stdout.transform(utf8.decoder).forEach((depLine) {
       // Description is disabled in local deps list. Therefore add padding strings for this.
       final dependies = depLine.split('\n');
@@ -369,7 +370,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
   Future<List<List<String>>> searchDeps(String searchKeyword) async {
     List<List<String>> _tmpList = [];
     _tmpList.add(['Module name', 'Version', 'Description']);
-    await Process.run('python', ['-W', 'ignore', utilsPath, searchKeyword])
+    await Process.run(python, ['-W', 'ignore', utilsPath, searchKeyword])
         .then((result) {
       // stdout.write(result.stdout);
       // stderr.write(result.stderr);

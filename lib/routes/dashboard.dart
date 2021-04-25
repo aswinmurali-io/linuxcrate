@@ -1,73 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
-import 'package:linuxcrate/routes/environment/common.dart';
+
 import 'package:linuxcrate/routes/environment/navbar.dart';
 import 'package:linuxcrate/routes/pkg_manager/content.dart';
 import 'package:linuxcrate/routes/pkg_manager/navbar.dart';
+
+Widget navbar = Container();
+Widget contentLayout = Container();
 
 class Dashboard extends StatefulWidget {
   @override
   _DashboardState createState() => _DashboardState();
 }
 
-Widget dashboardRoute = Container();
-
 class _DashboardState extends State<Dashboard> {
-  int _selectedIndex = 0;
-  final _scaffoldkey = GlobalKey<ScaffoldState>();
+  Widget get border => Flexible(
+        flex: 0,
+        child: Container(
+          width: 0.8,
+          color: Colors.grey.withOpacity(.2),
+        ),
+      );
 
-  @override
-  void initState() {
-    dashboardRoute = EnvironmentNavBar(setStateDashboard: setState);
-    super.initState();
+  void navigate(int index) {
+    setState(() {
+      switch (index) {
+        case 0:
+          navbar = EnvironmentNavBar(setStateDashboard: setState);
+          contentLayout = Container();
+          break;
+        case 1:
+          navbar = PackageManagerNavBar();
+          contentLayout = PackageManagerContent();
+          break;
+        default:
+          navbar = Container();
+          contentLayout = Container();
+          break;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      key: _scaffoldkey,
-      drawer: Drawer(),
       body: Container(
         child: Row(
-          children: <Widget>[
+          children: [
             Container(
               child: Column(
                 children: [
                   Expanded(
                     child: NavigationRail(
-                      selectedIndex: _selectedIndex,
-                      onDestinationSelected: (int index) => setState(() {
-                        switch (index) {
-                          case 0:
-                            dashboardRoute =
-                                EnvironmentNavBar(setStateDashboard: setState);
-                            break;
-                          case 1:
-                            dashboardRoute = PackageManagerNavBar();
-                            contentLayout = PackageManagerContent();
-                            break;
-                          default:
-                        }
-                      }),
-                      leading: Column(
-                        children: [
-                          // Container(
-                          //   child: IconButton(
-                          //     icon: Icon(
-                          //       FeatherIcons.menu,
-                          //       size: 19,
-                          //       color: Colors.grey[800],
-                          //     ),
-                          //     onPressed: () =>
-                          //         _scaffoldkey.currentState.openDrawer(),
-                          //   ),
-                          //   margin: EdgeInsets.only(bottom: 18),
-                          // ),
-                        ],
-                      ),
+                      selectedIndex: 0,
+                      onDestinationSelected: navigate,
                       labelType: NavigationRailLabelType.none,
-                      // selectedIconTheme: IconThemeData(size: 19),
                       unselectedIconTheme:
                           IconThemeData(size: 19, color: Colors.grey[500]),
                       selectedIconTheme:
@@ -80,47 +68,32 @@ class _DashboardState extends State<Dashboard> {
                           label: Text(''),
                         ),
                         NavigationRailDestination(
-                          icon: Icon(FeatherIcons.briefcase),
-                          label: Text(''),
-                        ),
-                        NavigationRailDestination(
-                          icon: Icon(FeatherIcons.bell),
-                          label: Text(''),
-                        ),
-                        NavigationRailDestination(
-                          icon: Icon(FeatherIcons.user),
-                          label: Text(''),
-                        ),
-                        NavigationRailDestination(
-                          icon: Icon(FeatherIcons.settings),
+                          icon: Tooltip(
+                              message: 'Packages',
+                              child: Icon(FeatherIcons.package)),
                           label: Text(''),
                         ),
                       ],
                     ),
                   ),
-                  IconButton(icon: Icon(FeatherIcons.info), onPressed: () {})
+                  IconButton(
+                    icon: Icon(FeatherIcons.info),
+                    onPressed: () {},
+                  )
                 ],
               ),
             ),
-            Flexible(
-                flex: 0,
-                child: Container(
-                  width: 0.8,
-                  color: Colors.grey.withOpacity(.2),
-                )),
+            border,
+            // Nav Bar Layout
             Flexible(
               flex: 2,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
-                child: dashboardRoute,
+                child: navbar,
               ),
             ),
-            Flexible(
-                flex: 0,
-                child: Container(
-                  width: 0.8,
-                  color: Colors.grey.withOpacity(.2),
-                )),
+            border,
+            // Content Layout
             Flexible(
               flex: 3,
               child: contentLayout,

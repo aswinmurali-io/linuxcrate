@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:linuxcrate/routes/dashboard.dart';
 import 'package:linuxcrate/routes/environment/common.dart';
 import 'package:linuxcrate/routes/environment/content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -190,7 +191,7 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
         selectedEnvironment.toString(),
       ]);
       // python3 -m venv <env_title>
-      await Process.run('python', ['-m', 'venv', _title]).then((result) {
+      await Process.run(python, ['-m', 'venv', _title]).then((result) {
         stdout.write(result.stdout);
         stderr.write(result.stderr);
       });
