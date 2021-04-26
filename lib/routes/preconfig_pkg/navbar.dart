@@ -11,7 +11,7 @@ class PreConfigRouteNavBar extends StatefulWidget {
 }
 
 class _PreConfigRouteNavBarState extends State<PreConfigRouteNavBar> {
-  get url => 'lib/utils/preconfig/packs.json';
+  static String get url => 'lib/utils/preconfig/packs.json';
 
   Future<Map<String, dynamic>> loadPacks() async =>
       jsonDecode(await File(url).readAsString());

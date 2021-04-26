@@ -6,35 +6,36 @@
         ]
     },
     "Flutter Pack": {
-        "description": "This is a pack which is used to setup flutter",
+        "description": "This is a pack which is used to setup Flutter",
         "path": [
             "snap.sh",
             "flutter.sh"
         ]
     },
     "React Pack": {
-        "description": "This is a pack which is used to setup SQL",
+        "description": "This is a pack which is used to setup NodeJS, React, React Native",
         "path": [
             "nodejs.sh",
-            "react.sh"
+            "react.sh",
+            "reactnative.sh"
         ]
     },
     "Firebase Pack": {
-        "description": "This is a pack which is used to setup SQL",
+        "description": "This is a pack which is used to setup Firebase, NodeJS",
         "path": [
             "nodejs.sh",
             "firebase.sh"
         ]
     },
     "Blender Pack": {
-        "description": "This is a pack which is used to setup SQL",
+        "description": "This is a pack which is used to setup Blender",
         "path": [
             "snap.sh",
             "blender.sh"
         ]
     },
     "Game Dev Pack": {
-        "description": "This is a pack which is used to setup SQL",
+        "description": "Pack not working yet.",
         "content": [
             "unity",
             "ue4",
@@ -50,12 +51,23 @@
         ]
     },
     "All Webbrowser Pack": {
-        "description": "The web browser pack can be used by web developers to test their code in multiple browser. Contains Opera, Firefox, Chrome, Edge.",
+        "description": "The web browser pack can be used by web developers to test their code in multiple browser. Contains Opera, Firefox, Chrome.",
         "content": [
-            "firefox",
-            "chrome",
-            "edge",
-            "opera"
+            "firefox.sh",
+            "chrome.sh",
+            "opera.sh"
+        ]
+    },
+    "Media VLC": {
+        "description": "VLC Media Player",
+        "content": [
+            "vlc.sh"
+        ]
+    },
+    "VS Code": {
+        "description": "VLC Media Player",
+        "content": [
+            "vscode.sh"
         ]
     }
 }
