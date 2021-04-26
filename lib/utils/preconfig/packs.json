@@ -1,0 +1,61 @@
+{
+    "SQL Pack": {
+        "description": "This is a pack which is used to setup SQL",
+        "path": [
+            "sql.sh"
+        ]
+    },
+    "Flutter Pack": {
+        "description": "This is a pack which is used to setup flutter",
+        "path": [
+            "snap.sh",
+            "flutter.sh"
+        ]
+    },
+    "React Pack": {
+        "description": "This is a pack which is used to setup SQL",
+        "path": [
+            "nodejs.sh",
+            "react.sh"
+        ]
+    },
+    "Firebase Pack": {
+        "description": "This is a pack which is used to setup SQL",
+        "path": [
+            "nodejs.sh",
+            "firebase.sh"
+        ]
+    },
+    "Blender Pack": {
+        "description": "This is a pack which is used to setup SQL",
+        "path": [
+            "snap.sh",
+            "blender.sh"
+        ]
+    },
+    "Game Dev Pack": {
+        "description": "This is a pack which is used to setup SQL",
+        "content": [
+            "unity",
+            "ue4",
+            "blender"
+        ]
+    },
+    "Artist Pack": {
+        "description": "The artist pack contains GIMP, Inkscape & Krita.",
+        "content": [
+            "gimp.sh",
+            "inkscape.sh",
+            "krita.sh"
+        ]
+    },
+    "All Webbrowser Pack": {
+        "description": "The web browser pack can be used by web developers to test their code in multiple browser. Contains Opera, Firefox, Chrome, Edge.",
+        "content": [
+            "firefox",
+            "chrome",
+            "edge",
+            "opera"
+        ]
+    }
+}

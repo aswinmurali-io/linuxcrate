@@ -4,6 +4,9 @@ import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:linuxcrate/routes/environment/navbar.dart';
 import 'package:linuxcrate/routes/pkg_manager/content.dart';
 import 'package:linuxcrate/routes/pkg_manager/navbar.dart';
+import 'package:linuxcrate/routes/preconfig_pkg/content.dart';
+
+import 'preconfig_pkg/navbar.dart';
 
 Widget navbar = Container();
 Widget contentLayout = Container();
@@ -32,6 +35,10 @@ class _DashboardState extends State<Dashboard> {
         case 1:
           navbar = PackageManagerNavBar();
           contentLayout = PackageManagerContent();
+          break;
+        case 2:
+          navbar = PreConfigRouteNavBar();
+          contentLayout = PreConfigRouteContent();
           break;
         default:
           navbar = Container();
@@ -71,6 +78,12 @@ class _DashboardState extends State<Dashboard> {
                           icon: Tooltip(
                               message: 'Packages',
                               child: Icon(FeatherIcons.package)),
+                          label: Text(''),
+                        ),
+                        NavigationRailDestination(
+                          icon: Tooltip(
+                              message: 'Pre Configuration',
+                              child: Icon(FeatherIcons.book)),
                           label: Text(''),
                         ),
                       ],
