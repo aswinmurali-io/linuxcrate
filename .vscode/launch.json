@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Linux Crate",
+            "name": "Linux Crate Flutter",
             "type": "dart",
             "request": "launch",
             "program": "lib/main.dart",
