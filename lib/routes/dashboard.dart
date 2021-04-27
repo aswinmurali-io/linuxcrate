@@ -5,7 +5,7 @@ import 'env/navbar.dart';
 import 'pkgmgr/content.dart';
 import 'pkgmgr/navbar.dart';
 import 'precfg/content.dart';
-import 'preconfig/navbar.dart';
+import 'precfg/navbar.dart';
 
 
 Widget navbar = Container();
