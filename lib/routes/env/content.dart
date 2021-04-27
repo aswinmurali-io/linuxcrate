@@ -6,9 +6,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:linuxcrate/routes/dashboard.dart';
-import 'package:linuxcrate/routes/environment/common.dart';
-import 'package:linuxcrate/routes/environment/navbar.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'env.dart';
+import 'navbar.dart';
 
 class EnvironmentDetailsLayout extends StatefulWidget {
   final String title;

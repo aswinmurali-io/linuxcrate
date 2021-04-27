@@ -3,7 +3,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:linuxcrate/routes/pkg_manager/content.dart';
+import 'content.dart';
+
 
 class Package {
   final String name;

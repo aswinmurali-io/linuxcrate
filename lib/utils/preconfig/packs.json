@@ -65,7 +65,7 @@
         ]
     },
     "VS Code": {
-        "description": "VLC Media Player",
+        "description": "Install the VSCode editor.",
         "content": [
             "vscode.sh"
         ]

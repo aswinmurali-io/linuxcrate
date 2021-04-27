@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 
-import 'package:linuxcrate/routes/environment/navbar.dart';
-import 'package:linuxcrate/routes/pkg_manager/content.dart';
-import 'package:linuxcrate/routes/pkg_manager/navbar.dart';
-import 'package:linuxcrate/routes/preconfig_pkg/content.dart';
+import 'env/navbar.dart';
+import 'pkgmgr/content.dart';
+import 'pkgmgr/navbar.dart';
+import 'precfg/content.dart';
+import 'preconfig/navbar.dart';
 
-import 'preconfig_pkg/navbar.dart';
 
 Widget navbar = Container();
 Widget contentLayout = Container();

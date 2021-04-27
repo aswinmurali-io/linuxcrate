@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:linuxcrate/routes/pkg_manager/content.dart';
-import 'package:linuxcrate/routes/pkg_manager/packages.dart';
+
+import 'content.dart';
+import 'pkgmgr.dart';
 
 class PackageManagerNavBar extends StatefulWidget {
   PackageManagerNavBar({Key key}) : super(key: key);

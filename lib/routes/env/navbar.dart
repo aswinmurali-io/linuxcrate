@@ -4,10 +4,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:linuxcrate/routes/dashboard.dart';
-import 'package:linuxcrate/routes/environment/common.dart';
-import 'package:linuxcrate/routes/environment/content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../dashboard.dart';
+import 'content.dart';
+import 'env.dart';
 
 List<EnvironmentListTile> environmentList = [];
 
@@ -240,8 +241,7 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
                       onChanged: (value) => _description = value,
                       decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText:
-                              'Enter keyword for reference'),
+                          hintText: 'Enter keyword for reference'),
                     ),
                   ),
                   const PopupMenuDivider(),

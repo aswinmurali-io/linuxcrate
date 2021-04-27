@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:linuxcrate/routes/pkg_manager/packages.dart';
 import 'package:string_similarity/string_similarity.dart';
+
+import 'pkgmgr.dart';
 
 String stdoutTextWidget = '';
 StateSetter setStateFromContent;

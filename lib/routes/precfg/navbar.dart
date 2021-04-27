@@ -1,7 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+
+import 'precfg.dart';
 
 class PreConfigRouteNavBar extends StatefulWidget {
   PreConfigRouteNavBar({Key key}) : super(key: key);
@@ -11,15 +10,10 @@ class PreConfigRouteNavBar extends StatefulWidget {
 }
 
 class _PreConfigRouteNavBarState extends State<PreConfigRouteNavBar> {
-  static String get url => 'lib/utils/preconfig/packs.json';
-
-  Future<Map<String, dynamic>> loadPacks() async =>
-      jsonDecode(await File(url).readAsString());
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, dynamic>>(
-      future: loadPacks(),
+      future: PreConfig.loadPacks(),
       builder: (context, snapshot) {
         final packs = snapshot.data;
         if (snapshot.hasData)
@@ -32,7 +26,8 @@ class _PreConfigRouteNavBarState extends State<PreConfigRouteNavBar> {
                   isThreeLine: true,
                   trailing: IconButton(
                     icon: Icon(Icons.download),
-                    onPressed: () {},
+                    onPressed: () async =>
+                        await PreConfig.installPack(packs[pack]),
                   ),
                   onTap: () {},
                 ),
