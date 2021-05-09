@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:linuxcrate/routes/ramdisk/content.dart';
+import 'package:linuxcrate/routes/ramdisk/navbar.dart';
 
 import 'env/navbar.dart';
 import 'pkgmgr/content.dart';
 import 'pkgmgr/navbar.dart';
 import 'precfg/content.dart';
 import 'precfg/navbar.dart';
-
 
 Widget navbar = Container();
 Widget contentLayout = Container();
@@ -39,6 +40,10 @@ class _DashboardState extends State<Dashboard> {
         case 2:
           navbar = PreConfigRouteNavBar();
           contentLayout = PreConfigRouteContent();
+          break;
+        case 3:
+          navbar = RamDiskNavBar();
+          contentLayout = RamDiskContent();
           break;
         default:
           navbar = Container();
@@ -84,6 +89,12 @@ class _DashboardState extends State<Dashboard> {
                           icon: Tooltip(
                               message: 'Pre Configuration',
                               child: Icon(FeatherIcons.book)),
+                          label: Text(''),
+                        ),
+                        NavigationRailDestination(
+                          icon: Tooltip(
+                              message: 'Ram Disk Manager',
+                              child: Icon(FeatherIcons.cpu)),
                           label: Text(''),
                         ),
                       ],

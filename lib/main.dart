@@ -24,7 +24,7 @@ class LinuxCrate extends StatelessWidget {
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           textTheme: GoogleFonts.ubuntuTextTheme(
-            TextTheme(
+            const TextTheme(
               headline6: TextStyle(
                 color: Colors.black,
                 fontSize: 25.0,

@@ -20,6 +20,9 @@ doc/api/
 *.js.deps
 *.js.map
 
+*.*.dart
+data/
+
 testt
 test
 generated_plugin_registrant.dart

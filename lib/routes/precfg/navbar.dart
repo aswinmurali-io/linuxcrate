@@ -6,7 +6,7 @@ class PreConfigRouteNavBar extends StatefulWidget {
   PreConfigRouteNavBar({Key key}) : super(key: key);
 
   @override
-  _PreConfigRouteNavBarState createState() => _PreConfigRouteNavBarState();
+  createState() => _PreConfigRouteNavBarState();
 }
 
 class _PreConfigRouteNavBarState extends State<PreConfigRouteNavBar> {

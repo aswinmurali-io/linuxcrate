@@ -19,8 +19,8 @@ class PreConfig {
       ]);
       await process.stdout.transform(utf8.decoder).forEach((stdout) =>
           setStateFromContent?.call(() => stdoutTextWidget += stdout));
-      await process.stderr.transform(utf8.decoder).forEach((stdout) =>
-          setStateFromContent?.call(() => stdoutTextWidget += stdout));
+      await process.stderr.transform(utf8.decoder).forEach((stderr) =>
+          setStateFromContent?.call(() => stdoutTextWidget += stderr));
     }
   }
 }
