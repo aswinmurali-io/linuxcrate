@@ -8,29 +8,43 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'ramdisk.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(nullable: false)
 class RamDisk {
   final String name;
   final int sizeInMegaBytes;
+  final bool mounted;
 
-  const RamDisk({this.name, this.sizeInMegaBytes});
+  const RamDisk({
+    @required this.name,
+    @required this.sizeInMegaBytes,
+    this.mounted: false,
+  });
 
   factory RamDisk.fromJson(Map<String, dynamic> json) =>
       _$RamDiskFromJson(json);
 
   Map<String, dynamic> toJson() => _$RamDiskToJson(this);
+
+  @override
+  toString() =>
+      'RamDisk(name: $name, size: $sizeInMegaBytes MB, mounted: $mounted)';
 }
 
 abstract class RamDiskManager {
   static const saveUrl = 'data/ramDisks.json';
 
-  Future<String> create(RamDisk disk, BuildContext context);
+  Future<String> create(
+      List<RamDisk> ramDisks, RamDisk disk, BuildContext context);
 
-  Future<String> eject(RamDisk disk);
+  Future<String> eject(List<RamDisk> ramDisks, RamDisk disk);
 
-  Future<String> remove(RamDisk disk);
+  Future<String> mount(List<RamDisk> ramDisks, RamDisk disk);
+
+  Future<String> remove(List<RamDisk> ramDisks, RamDisk disk);
 
   Future<List<RamDisk>> list();
+
+  Future<void> open(RamDisk disk);
 
   Future<void> save(List<RamDisk> ramDisks) async {
     final file = File(saveUrl);
@@ -54,97 +68,158 @@ abstract class RamDiskManager {
 
 class DummyPackageManager extends RamDiskManager {
   @override
-  create(disk, context) async => '';
+  create(ramDisks, disk, context) async => '';
 
   @override
-  eject(disk) async => '';
+  eject(ramDisks, disk) async => '';
 
   @override
   list() async => [];
 
   @override
-  remove(disk) async => '';
+  remove(ramDisks, disk) async => '';
+
+  @override
+  open(disk) async => null;
+
+  @override
+  mount(ramDisks, disk) async => '';
 }
 
 class LinuxRamDiskManager extends RamDiskManager {
   @override
-  create(disk, context) async {
-    Process process;
-    String stdoutTextWidget;
+  create(ramDisks, disk, context) async {
+    // pkexec mkdir -p /media/linuxcrate/diskname
 
-    process = await Process.start('pkexec', [
+    ProcessResult process;
+    List<String> output = [];
+
+    process = await Process.run('pkexec', [
       'mkdir',
       '-p',
       '/media/linuxcrate/${disk.name}',
     ]);
 
-    await process.stdout
-        .transform(utf8.decoder)
-        .forEach((stdout) => stdoutTextWidget += stdout);
-    await process.stderr
-        .transform(utf8.decoder)
-        .forEach((stderr) => stdoutTextWidget += stderr);
+    output.addAll([process.stdout, process.stderr]);
 
-    process = await Process.start('sudo', [
+    // sudo mount -t tmpfs -o size=1MB tmpfs /media/linuxcrate/diskname
+
+    process = await Process.run('sudo', [
       'mount',
       '-t',
       'tmpfs',
       '-o',
-      'size=${disk.sizeInMegaBytes}\M',
+      'size=${disk.sizeInMegaBytes}M',
       'tmpfs',
       '/media/linuxcrate/${disk.name}'
     ]);
 
-    await process.stdout
-        .transform(utf8.decoder)
-        .forEach((stdout) => stdoutTextWidget += stdout);
-    await process.stderr
-        .transform(utf8.decoder)
-        .forEach((stderr) => stdoutTextWidget += stderr);
+    output.addAll([process.stdout, process.stderr]);
 
-    return stdoutTextWidget;
+    disk = RamDisk(
+      name: disk.name,
+      sizeInMegaBytes: disk.sizeInMegaBytes,
+      mounted: true,
+    );
+
+    ramDisks.add(disk);
+
+    return output.join('\n');
   }
 
   @override
-  eject(disk) async {
-    // sudo unmount /media/linuxcrate/diskname
+  eject(ramDisks, disk) async {
+    // sudo umount /media/linuxcrate/diskname
 
     final process = await Process.run('pkexec', [
       'umount',
+      '-l',
       '/media/linuxcrate/${disk.name}',
     ]);
 
-    return process.stdout;
+    int index = ramDisks.indexOf(disk);
+
+    ramDisks.remove(disk);
+
+    disk = RamDisk(
+      name: disk.name,
+      sizeInMegaBytes: disk.sizeInMegaBytes,
+      mounted: false,
+    );
+
+    ramDisks.insert(index, disk);
+
+    await save(ramDisks);
+
+    return '${process.stdout}\n${process.stderr}';
   }
 
   @override
-  remove(disk) async {
+  mount(ramDisks, disk) async {
+    // sudo mount -t tmpfs -o size=1M tmpfs /media/linuxcrate/diskname
+
+    final process = await Process.run('sudo', [
+      'mount',
+      '-t',
+      'tmpfs',
+      '-o',
+      'size=${disk.sizeInMegaBytes}M',
+      'tmpfs',
+      '/media/linuxcrate/${disk.name}'
+    ]);
+
+    int index = ramDisks.indexOf(disk);
+
+    ramDisks.remove(disk);
+
+    disk = RamDisk(
+      name: disk.name,
+      sizeInMegaBytes: disk.sizeInMegaBytes,
+      mounted: true,
+    );
+
+    ramDisks.insert(index, disk);
+
+    await save(ramDisks);
+
+    return '${process.stdout}\n${process.stderr}';
+  }
+
+  @override
+  remove(ramDisks, disk) async {
     // sudo unmount /media/linuxcrate/diskname
 
-    await Process.run('pkexec', [
+    ProcessResult process;
+    List<String> output = [];
+
+    process = await Process.run('pkexec', [
       'umount',
+      '-l',
       '/media/linuxcrate/${disk.name}',
     ]);
+
+    output.addAll([process.stdout, process.stderr]);
 
     // sudo rm -r /media/linuxcrate/diskname
 
-    final process = await Process.run('pkexec', [
+    process = await Process.run('pkexec', [
       'rm',
       '-rf',
       '/media/linuxcrate/${disk.name}',
     ]);
 
-    return process.stdout;
+    output.addAll([process.stdout, process.stderr]);
+
+    ramDisks.remove(disk);
+
+    await save(ramDisks);
+
+    return output.join('\n');
   }
 
   @override
   list() async {
-    // ls -lh /media/linuxcrate/
-
-    final process = await Process.run('ls', [
-      '-lh',
-      '/media/linuxcrate/',
-    ]);
+    // loading only ram disk created by linuxcrate for safety.
 
     final file = File(RamDiskManager.saveUrl);
 
@@ -162,27 +237,12 @@ class LinuxRamDiskManager extends RamDiskManager {
     json.forEach(
         (diskname, ramDiskJson) => ramDisks.add(RamDisk.fromJson(ramDiskJson)));
 
-    // split each line and take the last part. Also compare it with the
-    // app's own ram disk record and list only the once that are currently
-    // available. If found get the [sizeInMegaBytes] for that [ramDisk].
-
-    final ramDiskNamesFromDisk = '${process.stdout}'.split('\n').map((line) {
-      final name = line.split(' ').last;
-      int sizeInMegaBytes;
-      try {
-        sizeInMegaBytes =
-            ramDisks.where((disk) => disk.name == name).first.sizeInMegaBytes;
-      } on StateError {
-        sizeInMegaBytes = 0;
-      }
-      return RamDisk(name: name, sizeInMegaBytes: sizeInMegaBytes);
-    }).toList();
-
-    // removing the first and last parts because they are not required.
-    // ls outputs unnecessary parts in stdout.
-
-    return ramDiskNamesFromDisk.sublist(1, ramDiskNamesFromDisk.length - 1);
+    return ramDisks;
   }
+
+  @override
+  open(disk) async =>
+      await Process.start('xdg-open', ['/media/linuxcrate/${disk.name}']);
 }
 
 class RamDiskUI {
@@ -190,7 +250,7 @@ class RamDiskUI {
 
   const RamDiskUI(this.ramDiskManager);
 
-  Future<void> askConfig(BuildContext context) async {
+  Future<void> askConfig(List<RamDisk> ramDisks, BuildContext context) async {
     String diskname;
     int sizeInMegaBytes;
 
@@ -223,10 +283,11 @@ class RamDiskUI {
         actions: [
           ElevatedButton.icon(
             onPressed: () async {
-              if (diskname != null && sizeInMegaBytes != null)
-                await ramDiskManager.create(
-                    RamDisk(name: diskname, sizeInMegaBytes: sizeInMegaBytes),
-                    context);
+              if (diskname != null && sizeInMegaBytes != null) {
+                final disk =
+                    RamDisk(name: diskname, sizeInMegaBytes: sizeInMegaBytes);
+                await ramDiskManager.create(ramDisks, disk, context);
+              }
               Navigator.of(context).pop();
             },
             icon: Icon(Icons.save),

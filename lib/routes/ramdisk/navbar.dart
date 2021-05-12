@@ -8,10 +8,11 @@ class RamDiskNavBar extends StatefulWidget {
 }
 
 class _RamDiskNavBarState extends State<RamDiskNavBar> {
-  final ramDiskMgr = RamDiskManager.getRamDiskManager();
+  RamDiskManager ramDiskMgr;
   RamDiskUI ramDiskUI;
 
   _RamDiskNavBarState() {
+    ramDiskMgr = RamDiskManager.getRamDiskManager();
     ramDiskUI = RamDiskUI(ramDiskMgr);
   }
 
@@ -20,40 +21,52 @@ class _RamDiskNavBarState extends State<RamDiskNavBar> {
     return FutureBuilder<List<RamDisk>>(
       future: ramDiskMgr.list(),
       builder: (context, snapshot) {
-        final ramdisks = snapshot.data;
+        final ramDisks = snapshot.data;
         if (snapshot.hasData)
           return ListView(children: [
             OutlinedButton.icon(
               label: Text("New Ram Disk"),
               icon: Icon(Icons.add),
               onPressed: () async {
-                await ramDiskUI.askConfig(context);
-                await ramDiskMgr.save(ramdisks);
-                setState(() => ramdisks);
+                await ramDiskUI.askConfig(ramDisks, context);
+                await ramDiskMgr.save(ramDisks);
+                setState(() => ramDisks);
               },
             ),
-            for (var ramdisk in ramdisks)
+            for (var ramDisk in ramDisks)
               ListTile(
-                  title: Text(ramdisk.name),
-                  subtitle: Text('${ramdisk.sizeInMegaBytes}MB'),
+                  title: Text(ramDisk.name),
+                  subtitle: Text('${ramDisk.sizeInMegaBytes}MB'),
                   onTap: () {},
+                  leading: Icon(ramDisk.mounted
+                      ? Icons.phone_enabled
+                      : Icons.phone_disabled),
                   trailing: Wrap(
                     children: [
                       IconButton(
                         icon: Icon(Icons.delete),
                         onPressed: () async {
-                          await ramDiskMgr.remove(ramdisk);
-                          await ramDiskMgr.save(ramdisks);
-                          setState(() => ramdisks);
+                          await ramDiskMgr.remove(ramDisks, ramDisk);
+                          setState(() => ramDisks);
                         },
                       ),
                       IconButton(
                         icon: Icon(Icons.eject),
                         onPressed: () async {
-                          await ramDiskMgr.eject(ramdisk);
-                          await ramDiskMgr.save(ramdisks);
-                          setState(() => ramdisks);
+                          await ramDiskMgr.eject(ramDisks, ramDisk);
+                          setState(() => ramDisks);
                         },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.usb),
+                        onPressed: () async {
+                          await ramDiskMgr.mount(ramDisks, ramDisk);
+                          setState(() => ramDisks);
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.folder),
+                        onPressed: () async => ramDiskMgr.open(ramDisk),
                       ),
                     ],
                   )),
