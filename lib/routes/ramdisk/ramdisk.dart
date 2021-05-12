@@ -34,13 +34,27 @@ abstract class RamDiskManager {
   static const saveUrl = 'data/ramDisks.json';
 
   Future<String> create(
-      List<RamDisk> ramDisks, RamDisk disk, BuildContext context);
+    List<RamDisk> ramDisks,
+    RamDisk disk,
+    BuildContext context,
+  );
 
-  Future<String> eject(List<RamDisk> ramDisks, RamDisk disk);
+  Future<String> eject(
+    List<RamDisk> ramDisks,
+    RamDisk disk,
+  );
 
-  Future<String> mount(List<RamDisk> ramDisks, RamDisk disk);
+  Future<String> mount(
+    List<RamDisk> ramDisks,
+    RamDisk disk,
+  );
 
-  Future<String> remove(List<RamDisk> ramDisks, RamDisk disk);
+  Future<String> remove(
+    List<RamDisk> ramDisks,
+    RamDisk disk,
+  );
+
+  Future<List<RamDisk>> checkMounts(List<RamDisk> ramDisks);
 
   Future<List<RamDisk>> list();
 
@@ -58,7 +72,7 @@ abstract class RamDiskManager {
     await file.writeAsString(jsonEncode(json));
   }
 
-  static RamDiskManager getRamDiskManager() {
+  static RamDiskManager get() {
     if (Platform.isLinux)
       return LinuxRamDiskManager();
     else
@@ -84,6 +98,9 @@ class DummyPackageManager extends RamDiskManager {
 
   @override
   mount(ramDisks, disk) async => '';
+
+  @override
+  checkMounts(ramDisks) async => [];
 }
 
 class LinuxRamDiskManager extends RamDiskManager {
@@ -236,6 +253,55 @@ class LinuxRamDiskManager extends RamDiskManager {
 
     json.forEach(
         (diskname, ramDiskJson) => ramDisks.add(RamDisk.fromJson(ramDiskJson)));
+
+    return ramDisks;
+  }
+
+  @override
+  checkMounts(ramDisks) async {
+    // df /media/linuxcrate/diskname
+
+    for (var disk in ramDisks) {
+      final process =
+          await Process.run('df', ['/media/linuxcrate/${disk.name}']);
+
+      String output = process.stdout;
+
+      // Filesystem     1K-blocks  Used Available Use% Mounted on
+      // tmpfs               4096     0      4096   0% /media/linuxcrate/diskname
+
+      String fs = output.split('\n').skip(1).first.split(' ').first;
+
+      // if tmpfs then it's ram disk is mounted.
+
+      if (fs == 'tmpfs') {
+        int index = ramDisks.indexOf(disk);
+
+        ramDisks.remove(disk);
+
+        disk = RamDisk(
+          name: disk.name,
+          sizeInMegaBytes: disk.sizeInMegaBytes,
+          mounted: true,
+        );
+
+        ramDisks.insert(index, disk);
+      } else {
+        int index = ramDisks.indexOf(disk);
+
+        ramDisks.remove(disk);
+
+        disk = RamDisk(
+          name: disk.name,
+          sizeInMegaBytes: disk.sizeInMegaBytes,
+          mounted: false,
+        );
+
+        ramDisks.insert(index, disk);
+      }
+    }
+
+    await save(ramDisks);
 
     return ramDisks;
   }
