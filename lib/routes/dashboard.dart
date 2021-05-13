@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:linuxcrate/routes/dsktp/content.dart';
+import 'package:linuxcrate/routes/dsktp/navbar.dart';
 import 'package:linuxcrate/routes/ramdisk/content.dart';
 import 'package:linuxcrate/routes/ramdisk/navbar.dart';
 
@@ -44,6 +46,10 @@ class _DashboardState extends State<Dashboard> {
         case 3:
           navbar = RamDiskNavBar();
           contentLayout = RamDiskContent();
+          break;
+        case 4:
+          navbar = DesktopSwitchNavBar();
+          contentLayout = DesktopSwitchContent();
           break;
         default:
           navbar = Container();
@@ -95,6 +101,12 @@ class _DashboardState extends State<Dashboard> {
                           icon: Tooltip(
                               message: 'Ram Disk Manager',
                               child: Icon(FeatherIcons.cpu)),
+                          label: Text(''),
+                        ),
+                        NavigationRailDestination(
+                          icon: Tooltip(
+                              message: 'Desktop Manager',
+                              child: Icon(Icons.desktop_windows)),
                           label: Text(''),
                         ),
                       ],
