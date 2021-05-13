@@ -69,6 +69,7 @@ class _EnvironmentListTileState extends State<EnvironmentListTile> {
         setStateDashboard: widget.setStateDashboard,
       );
     });
+    await Process.run('sudo', ['rm', '-rf', widget.title]);
   }
 
   @override

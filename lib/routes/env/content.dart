@@ -131,7 +131,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     final process =
         await Process.start(python, [venvExecPath, widget.title, 'deactivate']);
     process.stdout.transform(utf8.decoder).forEach(print);
-    // await Process.run('sudo', ['rm' ]);
+    await Process.run('sudo', ['rm', '-rf', widget.title]);
     envNavBarSetState(() => widget.environmentList);
     await Directory(widget.title).delete(recursive: true);
   }
