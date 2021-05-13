@@ -95,17 +95,20 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
                     widget.setStateFromDashboard(
                         () => contentLayout = Container());
                     widget.setStateFromDashboard(
-                      () => contentLayout = EnvironmentDetailsLayout(
-                        title: titleTextFieldController.text,
-                        desp: despTextFieldController.text,
-                        environment:
-                            envTextFieldController.text == 'Environments.python'
-                                ? Environments.python
-                                : Environments.dart,
-                        environmentList: widget.environmentList,
-                        setStateFromDashboard: widget.setStateFromDashboard,
-                      ),
+                      () {
+                        contentLayout = EnvironmentDetailsLayout(
+                          title: titleTextFieldController.text,
+                          desp: despTextFieldController.text,
+                          environment: envTextFieldController.text ==
+                                  'Environments.python'
+                              ? Environments.python
+                              : Environments.dart,
+                          environmentList: widget.environmentList,
+                          setStateFromDashboard: widget.setStateFromDashboard,
+                        );
+                      },
                     );
+
                     Navigator.of(context).pop();
                   },
                 ),
@@ -119,10 +122,17 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
     final preferences = await SharedPreferences.getInstance();
     preferences.remove(widget.title);
     widget.environmentList.removeWhere((env) => env.title == widget.title);
-    widget.setStateFromDashboard(() => contentLayout = Container());
-    final process = await Process.start(
-        python, [venvExecPath, widget.title, 'deactivate']);
+    widget.setStateFromDashboard(() {
+      contentLayout = Container();
+      navbar = EnvironmentNavBar(
+        setStateDashboard: widget.setStateFromDashboard,
+      );
+    });
+    final process =
+        await Process.start(python, [venvExecPath, widget.title, 'deactivate']);
     process.stdout.transform(utf8.decoder).forEach(print);
+    // await Process.run('sudo', ['rm' ]);
+    envNavBarSetState(() => widget.environmentList);
     await Directory(widget.title).delete(recursive: true);
   }
 
@@ -244,7 +254,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
 
   void downloadDeps(String depName, String envName) async {
     Process process = await Process.start(
-        python, [venvExecPath, envName, 'pip install $depName']);
+        'sudo', [python, venvExecPath, envName, 'pip install $depName']);
     _pythonPipOutput = '';
     process.stdout.transform(utf8.decoder).forEach((txt) {
       print(txt);
@@ -259,7 +269,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
 
   void removeDeps(String depName, String envName) async {
     Process process = await Process.start(
-        python, [venvExecPath, envName, 'pip uninstall $depName -y']);
+        'sudo', [python, venvExecPath, envName, 'pip uninstall $depName -y']);
     _pythonPipOutput = '';
     process.stdout.transform(utf8.decoder).forEach((txt) {
       print(txt);
@@ -347,7 +357,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
       ['Module name', 'Version', 'Description']
     ];
     final process = await Process.start(
-        python, [venvExecPath, widget.title, 'pip freeze']);
+        'sudo', [python, venvExecPath, widget.title, 'pip freeze']);
     await process.stdout.transform(utf8.decoder).forEach((depLine) {
       // Description is disabled in local deps list. Therefore add padding strings for this.
       final dependies = depLine.split('\n');

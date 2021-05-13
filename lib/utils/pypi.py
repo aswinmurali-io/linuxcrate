@@ -30,13 +30,6 @@ class PyPIWeb(object):
         )
         return [package.string for package in packages]
 
-    def install(self, packagename: str) -> bool:
-        return False
-
-    def freeze() -> str:
-        return os.system('pip freeze')
-
-
 pypi = PyPIWeb()
 info = pypi.search(sys.argv[1])
 

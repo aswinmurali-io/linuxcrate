@@ -10,6 +10,8 @@ import '../dashboard.dart';
 import 'content.dart';
 import 'env.dart';
 
+StateSetter envNavBarSetState;
+
 List<EnvironmentListTile> environmentList = [];
 
 // Environment list tile UI for navbar
@@ -61,17 +63,24 @@ class _EnvironmentListTileState extends State<EnvironmentListTile> {
     final preferences = await SharedPreferences.getInstance();
     preferences.remove(widget.title);
     environmentList.removeWhere((env) => env.title == widget.title);
-    widget.setStateDashboard(() => contentLayout = Container());
+    widget.setStateDashboard(() {
+      contentLayout = Container();
+      navbar = EnvironmentNavBar(
+        setStateDashboard: widget.setStateDashboard,
+      );
+    });
   }
 
   @override
   void initState() {
     environmentList.clear();
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    envNavBarSetState = setState;
     return InkWell(
       onTap: onEnvironmentSelected,
       child: Container(
@@ -138,7 +147,12 @@ class _EnvironmentListTileState extends State<EnvironmentListTile> {
                   if (_selected)
                     Flexible(
                       flex: 0,
-                      child: Container(width: 3, color: Color(0xff5d71e1)),
+                      child: Container(
+                        width: 3,
+                        color: Color(
+                          0xff5d71e1,
+                        ),
+                      ),
                     )
                 ],
               ),
@@ -192,9 +206,10 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
         selectedEnvironment.toString(),
       ]);
       // python3 -m venv <env_title>
-      await Process.run(python, ['-m', 'venv', _title]).then((result) {
+      await Process.run('sudo', [python, '-m', 'venv', _title]).then((result) {
         stdout.write(result.stdout);
         stderr.write(result.stderr);
+        print(true);
       });
     } else
       ScaffoldMessenger.of(context)
@@ -204,6 +219,7 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
   @override
   void initState() {
     loadEnvironmentListDetails();
+    envNavBarSetState = setState;
     super.initState();
   }
 
@@ -322,7 +338,8 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
         ),
         environmentCreateMenu,
         const Padding(padding: const EdgeInsets.fromLTRB(0, 30, 0, 0)),
-      ]..addAll(environmentList),
+        ...environmentList
+      ],
     );
   }
 }
