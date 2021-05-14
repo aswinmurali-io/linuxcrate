@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:linuxcrate/routes/dsktp/content.dart';
 import 'package:linuxcrate/routes/dsktp/navbar.dart';
+import 'package:linuxcrate/routes/pkgmgr_snap/content.dart';
+import 'package:linuxcrate/routes/pkgmgr_snap/navbar.dart';
 import 'package:linuxcrate/routes/ramdisk/content.dart';
 import 'package:linuxcrate/routes/ramdisk/navbar.dart';
 
@@ -40,14 +42,18 @@ class _DashboardState extends State<Dashboard> {
           contentLayout = PackageManagerContent();
           break;
         case 2:
+          navbar = PackageManagerSnapNavBar();
+          contentLayout = PackageManagerContentSnap();
+          break;
+        case 3:
           navbar = PreConfigRouteNavBar();
           contentLayout = PreConfigRouteContent();
           break;
-        case 3:
+        case 4:
           navbar = RamDiskNavBar();
           contentLayout = RamDiskContent();
           break;
-        case 4:
+        case 5:
           navbar = DesktopSwitchNavBar();
           contentLayout = DesktopSwitchContent();
           break;
@@ -87,8 +93,14 @@ class _DashboardState extends State<Dashboard> {
                         ),
                         NavigationRailDestination(
                           icon: Tooltip(
-                              message: 'Packages',
+                              message: 'APT Packages',
                               child: Icon(FeatherIcons.package)),
+                          label: Text(''),
+                        ),
+                        NavigationRailDestination(
+                          icon: Tooltip(
+                              message: 'Snap Packages',
+                              child: Icon(Icons.view_module)),
                           label: Text(''),
                         ),
                         NavigationRailDestination(
