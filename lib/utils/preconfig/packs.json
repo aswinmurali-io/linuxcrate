@@ -1,20 +1,20 @@
 {
     "SQL Pack": {
         "description": "This is a pack which is used to setup SQL",
-        "path": [
+        "content": [
             "sql.sh"
         ]
     },
     "Flutter Pack": {
         "description": "This is a pack which is used to setup Flutter",
-        "path": [
+        "content": [
             "snap.sh",
             "flutter.sh"
         ]
     },
     "React Pack": {
         "description": "This is a pack which is used to setup NodeJS, React, React Native",
-        "path": [
+        "content": [
             "nodejs.sh",
             "react.sh",
             "reactnative.sh"
@@ -22,24 +22,16 @@
     },
     "Firebase Pack": {
         "description": "This is a pack which is used to setup Firebase, NodeJS",
-        "path": [
+        "content": [
             "nodejs.sh",
             "firebase.sh"
         ]
     },
     "Blender Pack": {
         "description": "This is a pack which is used to setup Blender",
-        "path": [
+        "content": [
             "snap.sh",
             "blender.sh"
-        ]
-    },
-    "Game Dev Pack": {
-        "description": "Pack not working yet.",
-        "content": [
-            "unity",
-            "ue4",
-            "blender"
         ]
     },
     "Artist Pack": {
@@ -53,9 +45,9 @@
     "All Webbrowser Pack": {
         "description": "The web browser pack can be used by web developers to test their code in multiple browser. Contains Opera, Firefox, Chrome.",
         "content": [
-            "firefox.sh",
             "chrome.sh",
-            "opera.sh"
+            "opera.sh",
+            "firefox.sh"
         ]
     },
     "Media VLC": {
@@ -64,10 +56,12 @@
             "vlc.sh"
         ]
     },
-    "VS Code": {
-        "description": "Install the VSCode editor.",
+    "Code Editor Pack": {
+        "description": "Code Editor pack contains VSCode & Vim.",
         "content": [
-            "vscode.sh"
+            "snap.sh",
+            "vscode.sh",
+            "vim.sh"
         ]
     }
 }

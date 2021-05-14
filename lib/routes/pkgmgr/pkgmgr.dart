@@ -180,9 +180,11 @@ class AptPackageManager extends PackageManager {
 
   @override
   Future<String> removeLocalPackages(
-          String packageName, BuildContext context) async =>
-      await _exec([packageRemove, packageName], context,
-          sudo: true, confirmYes: true);
+      String packageName, BuildContext context) async {
+    await _exec([packageRemove, packageName], context,
+        sudo: true, confirmYes: true);
+    return await autoRemoveLocalPackages;
+  }
 
   @override
   Future<String> installGlobalPackage(
