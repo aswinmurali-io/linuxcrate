@@ -3,8 +3,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'content.dart';
+import 'package:flutter/material.dart';
 
+import 'content.dart';
 
 class Package {
   final String name;
@@ -25,13 +26,13 @@ abstract class PackageManager {
 
   Future<List<Package>> get getLocalPackages;
   Future<List<Package>> searchLocalPackages(String keyword);
-  Future<String> updateLocalPackages(String packageName);
-  Future<String> removeLocalPackages(String packageName);
+  Future<String> updateLocalPackages(String packageName, BuildContext context);
+  Future<String> removeLocalPackages(String packageName, BuildContext context);
   Future<String> get autoRemoveLocalPackages;
   Stream<String> searchGlobalPackages(String _searchKeyword);
-  Future<String> installGlobalPackage(String packageName);
+  Future<String> installGlobalPackage(String packageName, BuildContext context);
 
-  Future<String> _exec(List<String> args,
+  Future<String> _exec(List<String> args, BuildContext context,
       {bool sudo: false, bool confirmYes: false}) async {
     Process process;
     if (sudo)
@@ -45,6 +46,12 @@ abstract class PackageManager {
         setStateFromContent?.call(() => stdoutTextWidget += stdout));
     await process.stderr.transform(utf8.decoder).forEach((stderr) =>
         setStateFromContent?.call(() => stdoutTextWidget += stderr));
+    // WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+    if (stdoutTextWidget.split('\n').contains(
+            "WARNING: apt does not have a stable CLI interface. Use with caution in scripts.") &&
+        context != null)
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Done!')));
     return stdoutTextWidget;
   }
 
@@ -87,10 +94,14 @@ class DummyPackageManager extends PackageManager {
       <Package>[];
 
   @override
-  Future<String> updateLocalPackages(String packageName) async => '';
+  Future<String> updateLocalPackages(
+          String packageName, BuildContext context) async =>
+      '';
 
   @override
-  Future<String> removeLocalPackages(String packageName) async => '';
+  Future<String> removeLocalPackages(
+          String packageName, BuildContext context) async =>
+      '';
 
   @override
   Future<String> get autoRemoveLocalPackages async => '';
@@ -99,7 +110,9 @@ class DummyPackageManager extends PackageManager {
   Stream<String> searchGlobalPackages(String _searchKeyword) async* {}
 
   @override
-  Future<String> installGlobalPackage(String packageName) async => '';
+  Future<String> installGlobalPackage(
+          String packageName, BuildContext context) async =>
+      '';
 }
 
 class AptPackageManager extends PackageManager {
@@ -160,21 +173,26 @@ class AptPackageManager extends PackageManager {
   }
 
   @override
-  Future<String> updateLocalPackages(String packageName) async =>
-      await _exec([...packageUpgrade, packageName],
+  Future<String> updateLocalPackages(
+          String packageName, BuildContext context) async =>
+      await _exec([...packageUpgrade, packageName], context,
           sudo: true, confirmYes: true);
 
   @override
-  Future<String> removeLocalPackages(String packageName) async =>
-      await _exec([packageRemove, packageName], sudo: true, confirmYes: true);
+  Future<String> removeLocalPackages(
+          String packageName, BuildContext context) async =>
+      await _exec([packageRemove, packageName], context,
+          sudo: true, confirmYes: true);
 
   @override
-  Future<String> installGlobalPackage(String packageName) async =>
-      await _exec(['install', packageName], sudo: true, confirmYes: true);
+  Future<String> installGlobalPackage(
+          String packageName, BuildContext context) async =>
+      await _exec(['install', packageName], context,
+          sudo: true, confirmYes: true);
 
   @override
   Future<String> get autoRemoveLocalPackages async =>
-      await _exec([packageAutoRemove], sudo: true, confirmYes: true);
+      await _exec([packageAutoRemove], null, sudo: true, confirmYes: true);
 
   @override
   Stream<String> searchGlobalPackages(String _searchKeyword) async* {

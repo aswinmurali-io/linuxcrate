@@ -51,14 +51,15 @@ class _PackageManagerNavBarState extends State<PackageManagerNavBar> {
                         icon: Icon(Icons.delete),
                         onPressed: () async {
                           await packageManager
-                              .removeLocalPackages(packages[index].name);
+                              .removeLocalPackages(packages[index].name, context);
                           setStateFromContent?.call(() => packageManager);
+                          setState(() {});
                         },
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.file_upload),
                         onPressed: () => packageManager
-                            .updateLocalPackages(packages[index].name),
+                            .updateLocalPackages(packages[index].name, context),
                       ),
                       title: SizedBox(
                         width: 300,

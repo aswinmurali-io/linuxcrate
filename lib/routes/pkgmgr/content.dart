@@ -66,7 +66,7 @@ class _PackageManagerContentState extends State<PackageManagerContent> {
                   onPressed: () async {
                     if (_searchKeyword.isNotEmpty)
                       setState(() => packageManager
-                          .installGlobalPackage(_searchKeyword)
+                          .installGlobalPackage(_searchKeyword, context)
                           .then((stdout) => stdoutTextWidget = stdout));
                   },
                 ),
@@ -131,15 +131,18 @@ class _PackageManagerContentState extends State<PackageManagerContent> {
                       return ListTile(
                         title: Text(
                           content[0],
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         subtitle: Text(content.skip(2).join(' ')),
                         isThreeLine: true,
-                        onTap: () async => setState(() => packageManager
-                            .installGlobalPackage(content[0])
-                            .then((stdout) => stdoutTextWidget = stdout)),
+                        onTap: () async {
+                          setState(() => packageManager
+                              .installGlobalPackage(content[0], context)
+                              .then((stdout) => stdoutTextWidget = stdout));
+                        },
                       );
                     },
                   ),

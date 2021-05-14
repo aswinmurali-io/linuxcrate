@@ -103,12 +103,12 @@ class _DashboardState extends State<Dashboard> {
                               child: Icon(FeatherIcons.cpu)),
                           label: Text(''),
                         ),
-                        NavigationRailDestination(
-                          icon: Tooltip(
-                              message: 'Desktop Manager',
-                              child: Icon(Icons.desktop_windows)),
-                          label: Text(''),
-                        ),
+                        // NavigationRailDestination(
+                        //   icon: Tooltip(
+                        //       message: 'Desktop Manager',
+                        //       child: Icon(Icons.desktop_windows)),
+                        //   label: Text(''),
+                        // ),
                       ],
                     ),
                   ),
