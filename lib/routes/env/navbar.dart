@@ -40,7 +40,7 @@ class EnvironmentNavBar extends StatefulWidget {
   EnvironmentNavBar({Key key, this.setStateDashboard}) : super(key: key);
 
   @override
-  _EnvironmentNavBarState createState() => _EnvironmentNavBarState();
+  EnvironmentNavBarState createState() => EnvironmentNavBarState();
 }
 
 class _EnvironmentListTileState extends State<EnvironmentListTile> {
@@ -74,7 +74,7 @@ class _EnvironmentListTileState extends State<EnvironmentListTile> {
 
   @override
   void initState() {
-    environmentList.clear();
+    // environmentList.clear();
 
     super.initState();
   }
@@ -167,7 +167,7 @@ class _EnvironmentListTileState extends State<EnvironmentListTile> {
   }
 }
 
-class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
+class EnvironmentNavBarState extends State<EnvironmentNavBar> {
   String _title = '';
   String _description = '';
 
@@ -219,8 +219,9 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
 
   @override
   void initState() {
-    loadEnvironmentListDetails();
     envNavBarSetState = setState;
+    environmentList.clear();
+    loadEnvironmentListDetails();
     super.initState();
   }
 
@@ -326,8 +327,14 @@ class _EnvironmentNavBarState extends State<EnvironmentNavBar> {
         ),
       );
 
+  bool lock = false;
+
   @override
   Widget build(BuildContext context) {
+    if (!lock) {
+      
+      lock = true;
+    }
     return ListView(
       children: [
         Text(

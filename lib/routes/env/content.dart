@@ -157,7 +157,8 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
             : Environments.dart,
         setStateDashboard: widget.setStateFromDashboard,
       ));
-      await Process.run('sudo', ['mv', widget.title, titleTextFieldController.text ]);
+      await Process.run(
+          'sudo', ['mv', widget.title, titleTextFieldController.text]);
       widget.setStateFromDashboard(() {
         contentLayout = EnvironmentDetailsLayout(
           title: titleTextFieldController.text,
@@ -202,7 +203,8 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 15, 0, 10),
             child: Wrap(
-              spacing: 20,
+              spacing: 10,
+              runSpacing: 10,
               children: [
                 ElevatedButton.icon(
                   onPressed: addDepsDialog,
@@ -211,8 +213,8 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
                 ),
                 ElevatedButton.icon(
                   onPressed: saveEnvironment,
-                  icon: Icon(Icons.save),
-                  label: Text('Save'),
+                  icon: Icon(Icons.sync),
+                  label: Text('Save | Refresh Local Dependies'),
                 ),
                 ElevatedButton.icon(
                   onPressed: deleteEnvironment,
@@ -220,15 +222,17 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
                   label: Text('Delete'),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () => null,
+                  onPressed: () async {
+                    final p =
+                        await Process.run('bash', ['${widget.title}/main.sh']);
+
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            'out=${p.stdout}\nerr=${p.stderr}\nExecution complete!')));
+                  },
                   icon: Icon(Icons.build),
                   label: Text('Launch Build Script'),
                 ),
-                // ElevatedButton.icon(
-                //   onPressed: () => null,
-                //   icon: Icon(Icons.open_with),
-                //   label: Text('Open Editor'),
-                // ),
                 ElevatedButton.icon(
                   onPressed: () => Process.start(explorer, [widget.title]),
                   icon: Icon(Icons.open_in_browser),
