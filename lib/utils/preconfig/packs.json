@@ -1,30 +1,9 @@
 {
-    "SQL Pack": {
-        "description": "This is a pack which is used to setup SQL",
-        "content": [
-            "sql.sh"
-        ]
-    },
     "Flutter Pack": {
         "description": "This is a pack which is used to setup Flutter",
         "content": [
             "snap.sh",
             "flutter.sh"
-        ]
-    },
-    "React Pack": {
-        "description": "This is a pack which is used to setup NodeJS, React, React Native",
-        "content": [
-            "nodejs.sh",
-            "react.sh",
-            "reactnative.sh"
-        ]
-    },
-    "Firebase Pack": {
-        "description": "This is a pack which is used to setup Firebase, NodeJS",
-        "content": [
-            "nodejs.sh",
-            "firebase.sh"
         ]
     },
     "Blender Pack": {

@@ -123,26 +123,29 @@ class _PackageManagerContentState extends State<PackageManagerContent> {
                     itemCount: _packagesInfo.length,
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
+                      crossAxisCount: 2,
                       childAspectRatio: 4.0,
                     ),
                     itemBuilder: (context, index) {
                       final content = _packagesInfo[index].split(' ');
-                      return ListTile(
-                        title: Text(
-                          content[0],
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+                          title: Text(
+                            content[0],
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
+                          subtitle: Text(content.skip(2).join(' ')),
+                          isThreeLine: true,
+                          onTap: () async {
+                            setState(() => packageManager
+                                .installGlobalPackage(content[0], context)
+                                .then((stdout) => stdoutTextWidget = stdout));
+                          },
                         ),
-                        subtitle: Text(content.skip(2).join(' ')),
-                        isThreeLine: true,
-                        onTap: () async {
-                          setState(() => packageManager
-                              .installGlobalPackage(content[0], context)
-                              .then((stdout) => stdoutTextWidget = stdout));
-                        },
                       );
                     },
                   ),
