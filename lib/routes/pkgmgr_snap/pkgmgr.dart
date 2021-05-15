@@ -32,6 +32,8 @@ abstract class PackageManager {
   Future<String> _exec(List<String> args, BuildContext context,
       {bool sudo: false}) async {
     Process process;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Executing in background...')));
     if (sudo)
       process = await Process.start(sudoAgent, [packageManager, ...args]);
     else
@@ -41,12 +43,9 @@ abstract class PackageManager {
         setStateFromContent?.call(() => stdoutTextWidget += stdout));
     await process.stderr.transform(utf8.decoder).forEach((stderr) =>
         setStateFromContent?.call(() => stdoutTextWidget += stderr));
-    // WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
-    if (stdoutTextWidget.split('\n').contains(
-            "WARNING: apt does not have a stable CLI interface. Use with caution in scripts.") &&
-        context != null)
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Done!')));
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Execution complete!')));
     return stdoutTextWidget;
   }
 
@@ -174,7 +173,7 @@ class AptPackageManager extends PackageManager {
       final process =
           await Process.run(packageManager, ['search', _searchKeyword]);
       String stdout = await process.stdout;
-      return stdout.split('\n').skip(1);
+      return stdout.split('\n').skip(1).toList();
     }
     return [];
   }

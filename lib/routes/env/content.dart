@@ -128,9 +128,11 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
         setStateDashboard: widget.setStateFromDashboard,
       );
     });
-    final process =
-        await Process.start(python, [venvExecPath, widget.title, 'deactivate']);
-    process.stdout.transform(utf8.decoder).forEach(print);
+    try {
+      final process = await Process.start(
+          python, [venvExecPath, widget.title, 'deactivate']);
+      process.stdout.transform(utf8.decoder).forEach(print);
+    } catch (e) {}
     await Process.run('sudo', ['rm', '-rf', widget.title]);
     envNavBarSetState(() => widget.environmentList);
     await Directory(widget.title).delete(recursive: true);
@@ -155,6 +157,7 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
             : Environments.dart,
         setStateDashboard: widget.setStateFromDashboard,
       ));
+      await Process.run('sudo', ['mv', widget.title, titleTextFieldController.text ]);
       widget.setStateFromDashboard(() {
         contentLayout = EnvironmentDetailsLayout(
           title: titleTextFieldController.text,
@@ -164,6 +167,9 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
               : Environments.dart,
           environmentList: widget.environmentList,
           setStateFromDashboard: widget.setStateFromDashboard,
+        );
+        navbar = EnvironmentNavBar(
+          setStateDashboard: widget.setStateFromDashboard,
         );
       });
     } else

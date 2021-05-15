@@ -110,13 +110,12 @@ class _PackageManagerContentSnapState extends State<PackageManagerContentSnap> {
           FutureBuilder<List<String>>(
               future: packageManager.searchGlobalPackages(_searchKeyword),
               builder: (context, snapshot) {
-                final _packagesInfo = snapshot.data;
-                print(_packagesInfo);
-                if (snapshot.hasData)
+                if (snapshot.hasData) {
+                  final _packagesInfo = snapshot.data;
                   return Expanded(
                     child: Scrollbar(
                       child: GridView.builder(
-                        itemCount: _packagesInfo.length,
+                        itemCount: (_packagesInfo.length > 0) ? _packagesInfo.length - 1 : 0,
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
@@ -145,6 +144,7 @@ class _PackageManagerContentSnapState extends State<PackageManagerContentSnap> {
                       ),
                     ),
                   );
+                }
                 return Center();
               }),
         ],

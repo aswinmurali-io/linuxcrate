@@ -124,10 +124,12 @@ class _DashboardState extends State<Dashboard> {
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(FeatherIcons.info),
-                    onPressed: () {},
-                  )
+                  // IconButton(
+                  //   icon: Icon(FeatherIcons.info),
+                  //   onPressed: () {
+
+                  //   },
+                  // )
                 ],
               ),
             ),
