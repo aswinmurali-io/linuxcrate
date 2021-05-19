@@ -10,6 +10,7 @@ class LinuxCrate extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Linux Crate',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         textTheme: GoogleFonts.ubuntuTextTheme(
           Theme.of(context).textTheme,

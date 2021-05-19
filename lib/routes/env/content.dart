@@ -211,11 +211,11 @@ class _EnvironmentDetailsLayoutState extends State<EnvironmentDetailsLayout> {
                   icon: Icon(Icons.add),
                   label: Text('Add'),
                 ),
-                ElevatedButton.icon(
-                  onPressed: saveEnvironment,
-                  icon: Icon(Icons.sync),
-                  label: Text('Save | Refresh Local Dependies'),
-                ),
+                // ElevatedButton.icon(
+                //   onPressed: saveEnvironment,
+                //   icon: Icon(Icons.sync),
+                //   label: Text('Save | Refresh Local Dependies'),
+                // ),
                 ElevatedButton.icon(
                   onPressed: deleteEnvironment,
                   icon: Icon(Icons.delete),
