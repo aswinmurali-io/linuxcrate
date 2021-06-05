@@ -12,6 +12,7 @@ class _DesktopSwitchRouteState extends State<BatchEditsContent> {
   String sourceRegex = '';
   String desRegex = '';
   String delRegex = '';
+  String extRegex = '';
 
   @override
   build(context) {
@@ -148,7 +149,56 @@ class _DesktopSwitchRouteState extends State<BatchEditsContent> {
                   DesktopManager.batchDelete(delRegex, context);
                 },
               ),
-            )
+            ),
+
+            // Directory extension
+            const Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+              child: const Text(
+                "Extension change",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 5, 0, 15),
+              child: const Text(
+                "Supports regex",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            TextField(
+              onChanged: (value) => setState(() => sourceRegex = value),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Enter directory path with regex expression.',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+              child: TextField(
+                onChanged: (value) => setState(() => extRegex = value),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Extension changed format.',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+              child: ElevatedButton.icon(
+                label: Text("Change Extension"),
+                icon: Icon(Icons.delete),
+                onPressed: () {
+                  DesktopManager.batchExt(sourceRegex, extRegex, context);
+                },
+              ),
+            ),
           ],
         ),
       ),

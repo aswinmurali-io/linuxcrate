@@ -69,22 +69,24 @@ class DesktopManager {
   }
 
   static Future<void> batchExt(
-      String src, String des, BuildContext context) async {
+      String src, String ext, BuildContext context) async {
     final files = Glob(src);
 
     for (FileSystemEntity entity in files.listSync()) {
       final filename = basename(entity.path);
-      final 
-      print('$des/${filename.split('.').first}');
       try {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Executing...'),
           duration: const Duration(seconds: 1),
         ));
         try {
-          await File(entity.path).rename('$des/$filename');
+          await File(entity.path)
+              .rename('${dirname(src)}/${filename.split('.').first}.$ext');
         } catch (e) {
-          await Process.run('mv', ['-f', src, des]);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Failed'),
+            duration: const Duration(seconds: 1),
+          ));
         }
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Finished'),
@@ -122,6 +124,4 @@ class DesktopManager {
       ));
     }
   }
-
-  
 }
