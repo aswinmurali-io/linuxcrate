@@ -114,11 +114,20 @@ class _DesktopSwitchRouteState extends State<BatchEditsContent> {
 
             // Directory Delete
             const Padding(
-              padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
               child: const Text(
                 "Directory Batch delete",
                 style: TextStyle(
                   fontSize: 20,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 5, 0, 15),
+              child: const Text(
+                "Supports regex",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
