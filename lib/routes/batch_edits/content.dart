@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:linuxcrate/routes/dsktp/dsktp.dart';
+import 'package:linuxcrate/routes/batch_edits/batch_edits.dart';
 
-class DesktopSwitchContent extends StatefulWidget {
-  DesktopSwitchContent({Key key}) : super(key: key);
+class BatchEditsContent extends StatefulWidget {
+  BatchEditsContent({Key key}) : super(key: key);
 
   @override
   createState() => _DesktopSwitchRouteState();
 }
 
-class _DesktopSwitchRouteState extends State<DesktopSwitchContent> {
+class _DesktopSwitchRouteState extends State<BatchEditsContent> {
   String sourceRegex = '';
   String desRegex = '';
   String delRegex = '';
@@ -51,7 +51,7 @@ class _DesktopSwitchRouteState extends State<DesktopSwitchContent> {
               onChanged: (value) => setState(() => desRegex = value),
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.search),
-                hintText: 'Enter new path',
+                hintText: 'Enter new path.',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -97,7 +97,7 @@ class _DesktopSwitchRouteState extends State<DesktopSwitchContent> {
               onChanged: (value) => setState(() => desRegex = value),
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.search),
-                hintText: 'Enter new path',
+                hintText: 'Enter new path.',
                 border: OutlineInputBorder(),
               ),
             ),

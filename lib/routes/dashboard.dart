@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
-import 'package:linuxcrate/routes/dsktp/content.dart';
-import 'package:linuxcrate/routes/dsktp/navbar.dart';
+import 'package:linuxcrate/routes/batch_edits/content.dart';
+import 'package:linuxcrate/routes/batch_edits/navbar.dart';
 import 'package:linuxcrate/routes/pkgmgr_snap/content.dart';
 import 'package:linuxcrate/routes/pkgmgr_snap/navbar.dart';
 import 'package:linuxcrate/routes/ramdisk/content.dart';
@@ -54,8 +54,8 @@ class _DashboardState extends State<Dashboard> {
           contentLayout = RamDiskContent();
           break;
         case 5:
-          navbar = DesktopSwitchNavBar();
-          contentLayout = DesktopSwitchContent();
+          navbar = BatchEditsNavBar();
+          contentLayout = BatchEditsContent();
           break;
         default:
           navbar = Container();
@@ -117,7 +117,7 @@ class _DashboardState extends State<Dashboard> {
                         ),
                         NavigationRailDestination(
                           icon: Tooltip(
-                              message: 'Batch Folder',
+                              message: 'Batch Edits',
                               child: Icon(Icons.desktop_windows)),
                           label: Text(''),
                         ),
