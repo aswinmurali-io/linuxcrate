@@ -15,6 +15,7 @@ class LinuxCrate extends StatelessWidget {
         textTheme: GoogleFonts.ubuntuTextTheme(
           Theme.of(context).textTheme,
         ),
+        // brightness: Brightness.dark,
         popupMenuTheme: PopupMenuThemeData(
           textStyle: TextStyle(
             color: Colors.grey[700],

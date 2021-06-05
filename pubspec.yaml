@@ -12,9 +12,11 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_feather_icons: ^1.0.3
+  glob: ^2.0.1
   google_fonts: ^1.0.0
   json_annotation: 3.1.1
   json_serializable: 3.5.1
+  path: ^1.8.0
   shared_preferences: ^2.0.5
   string_similarity: ^2.0.0
   system_info: ^1.0.0

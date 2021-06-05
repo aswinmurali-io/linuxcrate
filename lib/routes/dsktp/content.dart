@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:linuxcrate/routes/dsktp/dsktp.dart';
 
 class DesktopSwitchContent extends StatefulWidget {
   DesktopSwitchContent({Key key}) : super(key: key);
@@ -8,8 +9,135 @@ class DesktopSwitchContent extends StatefulWidget {
 }
 
 class _DesktopSwitchRouteState extends State<DesktopSwitchContent> {
+  String sourceRegex = '';
+  String desRegex = '';
+  String delRegex = '';
+
   @override
   build(context) {
-    return Container();
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Directory Batch copy",
+              style: TextStyle(
+                fontSize: 20,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+              child: const Text(
+                "Supports regex",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+              child: TextField(
+                onChanged: (value) => setState(() => sourceRegex = value),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Enter path to copy.',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            TextField(
+              onChanged: (value) => setState(() => desRegex = value),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Enter new path',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+              child: ElevatedButton.icon(
+                label: Text("Copy"),
+                icon: Icon(Icons.copy),
+                onPressed: () {
+                  DesktopManager.batchCopy(sourceRegex, desRegex, context);
+                },
+              ),
+            ),
+
+            // Directory Move
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
+              child: const Text(
+                "Directory Batch move",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            ),
+            const Text(
+              "Supports regex",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+              child: TextField(
+                onChanged: (value) => setState(() => sourceRegex = value),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Enter path to move.',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            TextField(
+              onChanged: (value) => setState(() => desRegex = value),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Enter new path',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+              child: ElevatedButton.icon(
+                label: Text("Move"),
+                icon: Icon(Icons.copy),
+                onPressed: () {
+                  DesktopManager.batchMove(sourceRegex, desRegex, context);
+                },
+              ),
+            ),
+
+            // Directory Delete
+            const Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+              child: const Text("Directory Batch delete"),
+            ),
+            TextField(
+              onChanged: (value) => setState(() => delRegex = value),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Enter directory path with regex expression.',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+              child: ElevatedButton.icon(
+                label: Text("Delete"),
+                icon: Icon(Icons.delete),
+                onPressed: () {
+                  DesktopManager.batchDelete(delRegex, context);
+                },
+              ),
+            )
+          ],
+        ),
+      ),
+    );
   }
 }
